@@ -1,0 +1,41 @@
+.wi_shell {
+  border: 1px solid var(--wi_color-border);
+  border-radius: var(--wi_radius-0);
+  padding-block: var(--wi_padding-block);
+  padding-inline: var(--wi_padding-inline);
+  background: var(--wi_color-surface);
+  /*box-shadow: var(--wi_shadow-sm);*/
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi_space-lg);
+}
+
+/* .wi_section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi_space-sm);
+} */
+
+.wi_section__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--wi_space-xs);
+  font-size: var(--wi_font-size-h3);
+  font-weight: var(--wi_font-weight-semibold);
+  color: var(--wi_color-text);
+}
+
+/* Step Container */
+.wi_step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi_space-md);
+}
+
+.wi_step__actions {
+  display: flex;
+  gap: var(--wi_space-md);
+  margin-top: var(--wi_space-md);
+  flex-wrap: wrap;
+}
+
