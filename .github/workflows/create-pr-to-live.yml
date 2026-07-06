@@ -1,0 +1,26 @@
+name: Create PR to live
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create pull request to live
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: main
+          destination_branch: live
+          pr_title: "Deploy: sync main → live"
+          pr_body: "Auto-generated PR to deploy the latest changes from main to live."
+          github_token: ${{ secrets.GITHUB_TOKEN }}
