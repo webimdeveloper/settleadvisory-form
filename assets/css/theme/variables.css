@@ -37,11 +37,12 @@
     var(--wi_space-2xl)
   );
 
-  /* Horizontal: scales 24px (lg) to 80px (4xl) */
+  /* Horizontal: 1.5x tighter than the block padding above, scales
+     ~21px to ~43px, so the inner container gets more usable width. */
   --wi_padding-inline: clamp(
-    var(--wi_space-xl),
-    -0.5rem + 10vi,
-    var(--wi_space-3xl)
+    calc(var(--wi_space-xl) / 1.5),
+    calc((-0.5rem + 10vi) / 1.5),
+    calc(var(--wi_space-3xl) / 1.5)
   );
 
   /* Typography */
