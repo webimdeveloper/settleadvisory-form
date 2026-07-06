@@ -52,12 +52,7 @@
 
 /* .wi_group--selected wraps applicant type / trademarks / total classes so
    :last-child above strips the border under "Total classes" instead of
-   leaking to the group that follows it. Also scopes the line-item counter
-   (see .wi_stat--numbered below) so numbering continues across both the
-   mandatory and optional cost groups. */
-.wi_card--totals {
-  counter-reset: wi-item;
-}
+   leaking to the group that follows it. */
 
 .wi_group__title {
   border-bottom: 1px solid color-mix(in srgb, var(--wi_color-border) 60%, transparent);
@@ -137,22 +132,5 @@
 .wi_stat--grand-total-flush {
   margin-block-start: 0;
   border-top: none;
-}
-
-/* Line-item numbering (01, 02, ...) — continuous across both cost blocks,
-   auto-renumbers when Trademark Search / Priority Examination are hidden. */
-.wi_stat--numbered .wi_stat__label {
-  display: flex;
-  align-items: center;
-  gap: var(--wi_space-md);
-}
-
-.wi_stat--numbered .wi_stat__label::before {
-  counter-increment: wi-item;
-  content: counter(wi-item, decimal-leading-zero);
-  font-family: var(--wi_font-family);
-  font-size: 12px;
-  font-weight: var(--wi_font-weight-medium);
-  color: color-mix(in srgb, var(--wi_color-border-secondary) 50%, transparent);
 }
 
