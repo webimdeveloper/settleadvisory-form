@@ -65,13 +65,6 @@ const formattedStateDutyCert = computed(() => {
   return formatter.value.format(val);
 });
 
-const formattedStateDuty = computed(() => {
-  const val = props.currency === 'UZS'
-    ? (props.summary.totals.stateDutyUZS ?? (props.summary.totals.stateDutyUSD * props.rate))
-    : props.summary.totals.stateDutyUSD;
-  return formatter.value.format(val);
-});
-
 const formattedService = computed(() => {
   const val = props.currency === 'UZS'
     ? (props.summary.totals.serviceUZS ?? (props.summary.totals.serviceUSD * props.rate))
@@ -195,10 +188,6 @@ function onCurrencyChange(e) {
         <div class="wi_stat wi_stat--numbered">
           <span class="wi_stat__label">{{ config.labels?.state_fee_cert || 'State fee for TM certificate:' }}</span>
           <span class="wi_stat__value">{{ formattedStateDutyCert }} {{ currency }}</span>
-        </div>
-        <div class="wi_stat wi_stat--numbered">
-          <span class="wi_stat__label">{{ config.labels?.total_state_fee || 'Total state fee:' }}</span>
-          <span class="wi_stat__value">{{ formattedStateDuty }} {{ currency }}</span>
         </div>
         <div class="wi_stat wi_stat--numbered">
           <span class="wi_stat__label">{{ config.labels?.service || 'Service:' }}</span>
