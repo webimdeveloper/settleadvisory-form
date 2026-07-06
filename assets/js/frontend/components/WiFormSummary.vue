@@ -93,6 +93,28 @@ const formattedAccel = computed(() => {
   return formatter.value.format(val);
 });
 
+// Display-only sum of the three mandatory rows (filing + certificate + service).
+// Does not affect the grand total calculation, which is unchanged.
+const formattedSubtotal = computed(() => {
+  const submit = props.currency === 'UZS'
+    ? (props.summary.totals.stateDutySubmitUZS ?? (props.summary.totals.stateDutySubmitUSD * props.rate))
+    : props.summary.totals.stateDutySubmitUSD;
+  const cert = props.currency === 'UZS'
+    ? (props.summary.totals.stateDutyCertUZS ?? (props.summary.totals.stateDutyCertUSD * props.rate))
+    : props.summary.totals.stateDutyCertUSD;
+  const service = props.currency === 'UZS'
+    ? (props.summary.totals.serviceUZS ?? (props.summary.totals.serviceUSD * props.rate))
+    : props.summary.totals.serviceUSD;
+  return formatter.value.format(submit + cert + service);
+});
+
+const hasAdditionalServices = computed(() => {
+  return !!(
+    props.summary.totals.searchUZS || props.summary.totals.searchUSD ||
+    props.summary.totals.accelUZS || props.summary.totals.accelUSD
+  );
+});
+
 const formattedTotal = computed(() => {
   const val = props.currency === 'UZS'
     ? (props.summary.totals.totalUZS ?? (props.summary.totals.totalUSD * props.rate))
@@ -146,48 +168,61 @@ function onCurrencyChange(e) {
 
 
     <div class="wi_card wi_card--totals">
-      <!-- <p class="wi_card__title">Totals</p> -->
-      <div class="wi_stat">
-        <span class="wi_stat__label">{{ config.labels?.applicant_type || 'Applicant type:' }}</span>
-        <span class="wi_stat__value">{{
-          summary.mode === "company" 
-            ? (config.labels?.legal_entity || "Legal entity") 
-            : (config.labels?.individual || "Individual")
-        }}</span>
+      <div class="wi_group wi_group--selected">
+        <div class="wi_stat">
+          <span class="wi_stat__label">{{ config.labels?.applicant_type || 'Applicant type:' }}</span>
+          <span class="wi_stat__value">{{
+            summary.mode === "company"
+              ? (config.labels?.legal_entity || "Legal entity")
+              : (config.labels?.individual || "Individual")
+          }}</span>
+        </div>
+        <div class="wi_stat">
+          <span class="wi_stat__label">{{ config.labels?.trademarks || 'Trademarks:' }}</span>
+          <span class="wi_stat__value">{{ summary.trademarks }}</span>
+        </div>
+        <div class="wi_stat">
+          <span class="wi_stat__label">{{ config.labels?.total_classes || 'Total classes:' }}</span>
+          <span class="wi_stat__value" v-html="formattedClasses"></span>
+        </div>
       </div>
-      <div class="wi_stat">
-        <span class="wi_stat__label">{{ config.labels?.trademarks || 'Trademarks:' }}</span>
-        <span class="wi_stat__value">{{ summary.trademarks }}</span>
+      <div class="wi_group wi_group--mandatory">
+        <p class="wi_group__title">{{ config.labels?.standard_registration_costs || 'Standard Registration Costs' }}</p>
+        <div class="wi_stat wi_stat--numbered">
+          <span class="wi_stat__label">{{ config.labels?.state_fee_filing || 'State fee for filing:' }}</span>
+          <span class="wi_stat__value">{{ formattedStateDutySubmit }} {{ currency }}</span>
+        </div>
+        <div class="wi_stat wi_stat--numbered">
+          <span class="wi_stat__label">{{ config.labels?.state_fee_cert || 'State fee for TM certificate:' }}</span>
+          <span class="wi_stat__value">{{ formattedStateDutyCert }} {{ currency }}</span>
+        </div>
+        <div class="wi_stat wi_stat--numbered">
+          <span class="wi_stat__label">{{ config.labels?.total_state_fee || 'Total state fee:' }}</span>
+          <span class="wi_stat__value">{{ formattedStateDuty }} {{ currency }}</span>
+        </div>
+        <div class="wi_stat wi_stat--numbered">
+          <span class="wi_stat__label">{{ config.labels?.service || 'Service:' }}</span>
+          <span class="wi_stat__value">{{ formattedService }} {{ currency }}</span>
+        </div>
+        <div class="wi_stat wi_stat--subtotal" v-if="hasAdditionalServices">
+          <span class="wi_stat__label">{{ withColon(config.labels?.subtotal || 'Subtotal') }}</span>
+          <span class="wi_stat__value">{{ formattedSubtotal }} {{ currency }}</span>
+        </div>
       </div>
-      <div class="wi_stat">
-        <span class="wi_stat__label">{{ config.labels?.total_classes || 'Total classes:' }}</span>
-        <span class="wi_stat__value" v-html="formattedClasses"></span>
+
+      <div class="wi_group wi_group--optional" v-if="hasAdditionalServices">
+        <p class="wi_group__title">{{ config.labels?.additional_services || 'Additional Services' }}</p>
+        <div class="wi_stat wi_stat--numbered" v-if="(summary.totals.searchUZS || summary.totals.searchUSD)">
+          <span class="wi_stat__label">{{ withColon(config.labels?.search_total || 'Trademark search') }}</span>
+          <span class="wi_stat__value">{{ formattedSearch }} {{ currency }}</span>
+        </div>
+        <div class="wi_stat wi_stat--numbered" v-if="(summary.totals.accelUZS || summary.totals.accelUSD)">
+          <span class="wi_stat__label">{{ withColon(config.labels?.accelerated_total || 'Expedited registration') }}</span>
+          <span class="wi_stat__value">{{ formattedAccel }} {{ currency }}</span>
+        </div>
       </div>
-      <div class="wi_stat">
-        <span class="wi_stat__label">{{ config.labels?.state_fee_filing || 'State fee for filing:' }}</span>
-        <span class="wi_stat__value">{{ formattedStateDutySubmit }} {{ currency }}</span>
-      </div>
-      <div class="wi_stat">
-        <span class="wi_stat__label">{{ config.labels?.state_fee_cert || 'State fee for TM certificate:' }}</span>
-        <span class="wi_stat__value">{{ formattedStateDutyCert }} {{ currency }}</span>
-      </div>
-      <div class="wi_stat">
-        <span class="wi_stat__label">{{ config.labels?.total_state_fee || 'Total state fee:' }}</span>
-        <span class="wi_stat__value">{{ formattedStateDuty }} {{ currency }}</span>
-      </div>
-      <div class="wi_stat">
-        <span class="wi_stat__label">{{ config.labels?.service || 'Service:' }}</span>
-        <span class="wi_stat__value">{{ formattedService }} {{ currency }}</span>
-      </div>
-      <div class="wi_stat" v-if="(summary.totals.searchUZS || summary.totals.searchUSD)">
-        <span class="wi_stat__label">{{ withColon(config.labels?.search_total || 'Trademark search') }}</span>
-        <span class="wi_stat__value">{{ formattedSearch }} {{ currency }}</span>
-      </div>
-      <div class="wi_stat" v-if="(summary.totals.accelUZS || summary.totals.accelUSD)">
-        <span class="wi_stat__label">{{ withColon(config.labels?.accelerated_total || 'Expedited registration') }}</span>
-        <span class="wi_stat__value">{{ formattedAccel }} {{ currency }}</span>
-      </div>
-      <div class="wi_stat">
+
+      <div class="wi_stat wi_stat--grand-total" :class="{ 'wi_stat--grand-total-flush': !hasAdditionalServices }">
         <span class="wi_stat__label">{{ config.labels?.total || 'Total:' }}<sup>*</sup></span>
         <span class="wi_stat__value">{{ formattedTotal }} {{ currency }}</span>
       </div>
