@@ -50,8 +50,87 @@
   color: var(--wi_color-border-secondary);
 }
 
-.wi_card--totals .wi_stat:last-child > span {
+/* .wi_group--selected wraps applicant type / trademarks / total classes so
+   :last-child above strips the border under "Total classes" instead of
+   leaking to the group that follows it. */
+
+.wi_group__title {
+  border-bottom: 1px solid color-mix(in srgb, var(--wi_color-border) 60%, transparent);
+  font-family: var(--wi_font-family);
+  font-size: 13px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wi_color-text);
+}
+
+/* .wi_root p (base.css) sets a bottom margin on every <p> in the plugin —
+   too wide a selector to touch. Override it here, scoped to just the group
+   titles, so Standard Registration Costs / Additional Services don't get
+   an extra margin on top of the flex gap already spacing them from the
+   row below. */
+.wi_card--totals .wi_group__title {
+  margin: 0;
+}
+
+.wi_stat--subtotal > span,
+.wi_stat--grand-total > span {
   font-weight: var(--wi_font-weight-semibold);
   color: var(--wi_color-text);
+}
+
+/* Mandatory registration costs block. Rows stack via flex gap (not padding
+   or borders) so title-to-row and row-to-row spacing is uniform, matching
+   the Figma spec — no divider lines between the individual item rows. */
+.wi_group--mandatory {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-block-start: var(--wi_space-sm);
+  padding: 16px 20px;
+  background: var(--wi_color-surface);
+  border: 1px solid var(--wi_color-border);
+}
+
+.wi_group--mandatory .wi_stat,
+.wi_group--optional .wi_stat {
+  padding: 0;
+  border-bottom: none;
+}
+
+/* Subtotal closes out the mandatory block with its own divider, mirroring
+   the title's underline at the top of the block. */
+.wi_group--mandatory .wi_stat--subtotal {
+  padding-block-start: var(--wi_space-md);
+  border-top: 1px solid color-mix(in srgb, var(--wi_color-border) 60%, transparent);
+}
+
+/* Additional (optional) services block: no background, no border of its
+   own — just spacing from the block above and the same inline padding as
+   the mandatory block so both blocks' text aligns. */
+.wi_group--optional {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-block-start: var(--wi_space-lg);
+  padding-inline: 20px;
+}
+
+/* Grand total sits directly in the card (outside both boxes) but should
+   still line up horizontally with the boxed content above it. Divider goes
+   above it, same as Subtotal's divider above it in the mandatory block. */
+.wi_stat--grand-total {
+  margin-block-start: var(--wi_space-sm);
+  padding-inline: 20px;
+  padding-block-start: var(--wi_space-md);
+  border-top: 1px solid color-mix(in srgb, var(--wi_color-border) 60%, transparent);
+}
+
+/* No Subtotal/Additional Services above it (nothing selected beyond the
+   mandatory block) — Total sits directly under the box with no divider. */
+.wi_stat--grand-total-flush {
+  margin-block-start: 0;
+  border-top: none;
 }
 
