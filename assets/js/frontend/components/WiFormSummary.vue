@@ -181,15 +181,15 @@ function onCurrencyChange(e) {
       </div>
       <div class="wi_group wi_group--mandatory">
         <p class="wi_group__title">{{ config.labels?.standard_registration_costs || 'Standard Registration Costs' }}</p>
-        <div class="wi_stat wi_stat--numbered">
+        <div class="wi_stat">
           <span class="wi_stat__label">{{ config.labels?.state_fee_filing || 'State fee for filing:' }}</span>
           <span class="wi_stat__value">{{ formattedStateDutySubmit }} {{ currency }}</span>
         </div>
-        <div class="wi_stat wi_stat--numbered">
+        <div class="wi_stat">
           <span class="wi_stat__label">{{ config.labels?.state_fee_cert || 'State fee for TM certificate:' }}</span>
           <span class="wi_stat__value">{{ formattedStateDutyCert }} {{ currency }}</span>
         </div>
-        <div class="wi_stat wi_stat--numbered">
+        <div class="wi_stat">
           <span class="wi_stat__label">{{ config.labels?.service || 'Service:' }}</span>
           <span class="wi_stat__value">{{ formattedService }} {{ currency }}</span>
         </div>
@@ -201,11 +201,11 @@ function onCurrencyChange(e) {
 
       <div class="wi_group wi_group--optional" v-if="hasAdditionalServices">
         <p class="wi_group__title">{{ config.labels?.additional_services || 'Additional Services' }}</p>
-        <div class="wi_stat wi_stat--numbered" v-if="(summary.totals.searchUZS || summary.totals.searchUSD)">
+        <div class="wi_stat" v-if="(summary.totals.searchUZS || summary.totals.searchUSD)">
           <span class="wi_stat__label">{{ withColon(config.labels?.search_total || 'Trademark search') }}</span>
           <span class="wi_stat__value">{{ formattedSearch }} {{ currency }}</span>
         </div>
-        <div class="wi_stat wi_stat--numbered" v-if="(summary.totals.accelUZS || summary.totals.accelUSD)">
+        <div class="wi_stat" v-if="(summary.totals.accelUZS || summary.totals.accelUSD)">
           <span class="wi_stat__label">{{ withColon(config.labels?.accelerated_total || 'Expedited registration') }}</span>
           <span class="wi_stat__value">{{ formattedAccel }} {{ currency }}</span>
         </div>
