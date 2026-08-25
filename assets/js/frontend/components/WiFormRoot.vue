@@ -28,6 +28,8 @@ const formState = reactive({
 
 const currentStep = ref(0); // 0 = form, 1 = result
 const results = ref(null);
+const shellEl = ref(null);
+const isDownloading = ref(false);
 
 function handleMode(nextMode) {
   formState.mode = nextMode;
@@ -51,10 +53,33 @@ function handleBack() {
   currentStep.value = 0;
 }
 
+// Dynamic import here doesn't defer network loading — this bundle builds
+// as a single IIFE (vite.config.js), so Rollup inlines html-to-image into
+// it regardless. Kept dynamic anyway since it's free and correct if the
+// build format ever changes to something that can code-split.
+async function handleDownloadPng() {
+  if (!shellEl.value || isDownloading.value) return;
+  isDownloading.value = true;
+  try {
+    const { toPng } = await import('html-to-image');
+    const dataUrl = await toPng(shellEl.value, {
+      pixelRatio: 3,
+      backgroundColor: '#ffffff',
+    });
+    const link = document.createElement('a');
+    link.download = `trademark-quote-${Date.now()}.png`;
+    link.href = dataUrl;
+    link.click();
+  } catch (e) {
+    console.error('WiForm: PNG export failed', e);
+  } finally {
+    isDownloading.value = false;
+  }
+}
 </script>
 
 <template>
-  <div class="wi_root wi_shell" :class="{ 'wi_root--manager': isManagerView }" :data-instance-id="instanceId">
+  <div ref="shellEl" class="wi_root wi_shell" :class="{ 'wi_root--manager': isManagerView }" :data-instance-id="instanceId">
     <div v-if="currentStep === 0" class="wi_section">
       <!--<h2 class="wi_section__heading">Select applicant type below:</h2>-->
       <FormStep
@@ -88,6 +113,12 @@ function handleBack() {
        manager can still fix a typo without reloading and losing input. -->
   <div v-if="isManagerView && currentStep === 1" class="wi_manager-back-wrap">
     <button class="wi_btn wi_btn--secondary wi_btn-to-back" type="button" @click="handleBack">{{ config.labels?.back || '← Back' }}</button>
+    <button
+      class="wi_btn wi_btn--primary"
+      type="button"
+      :disabled="isDownloading"
+      @click="handleDownloadPng"
+    >{{ isDownloading ? 'Preparing…' : 'Download PNG' }}</button>
   </div>
 </template>
 
