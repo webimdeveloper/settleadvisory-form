@@ -21,6 +21,7 @@ class WiForm_Plugin {
 		if ( is_admin() ) {
 			add_action( 'admin_menu', [ $this, 'register_admin_menu' ] );
 			add_action( 'admin_init', [ $this, 'register_settings' ] );
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_css_editor' ] );
 		}
 		
 		add_action( 'init', [ $this, 'register_polylang_strings' ] );
@@ -56,6 +57,29 @@ class WiForm_Plugin {
 			[ $this, 'render_admin_page' ],     // Callback
 			'dashicons-calculator',             // Icon
 			26                                  // Position
+		);
+	}
+
+	/**
+	 * Syntax-highlighted CSS editor (WP core's bundled CodeMirror) for the
+	 * "Custom CSS" field, on the WiForm settings page only.
+	 */
+	public function enqueue_admin_css_editor( string $hook ): void {
+		if ( 'toplevel_page_wiform' !== $hook ) {
+			return;
+		}
+
+		$settings = wp_enqueue_code_editor( [ 'type' => 'text/css' ] );
+		if ( false === $settings ) {
+			return; // User has disabled the code editor in their profile.
+		}
+
+		wp_add_inline_script(
+			'code-editor',
+			sprintf(
+				'jQuery(function() { if ( document.getElementById("wiform_manager_custom_css") ) { wp.codeEditor.initialize("wiform_manager_custom_css", %s); } });',
+				wp_json_encode( $settings )
+			)
 		);
 	}
 

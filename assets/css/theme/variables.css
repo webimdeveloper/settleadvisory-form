@@ -72,11 +72,11 @@
   --wi_transition-base: 180ms ease;
 }
 
-/* Manager-only view, triggered by ?wiform_view=manager (see main.js). Same
-   markup and layout as the public calculator, but a higher-contrast palette
-   so a screenshot of the result screen stays legible once pasted onto a
-   white page in a commercial proposal — the default grey card fill and
-   muted-grey stat text read as washed out once lifted off the site. */
+/* Manager-only view ([wi_form_trademark_manager], config.managerView).
+   Same markup and layout as the public calculator, but a higher-contrast
+   palette so a PNG export of the result screen stays legible once pasted
+   onto a white page in a commercial proposal — the default grey card fill
+   and muted-grey stat text read as washed out once lifted off the site. */
 .wi_root--manager {
   --wi_color-surface: #ffffff;
   --wi_color-surface-muted: #ffffff;
@@ -84,4 +84,37 @@
   --wi_color-border-secondary: #1a1a1a;
   --wi_color-text: #111111;
   --wi_color-text-muted: #333333;
+}
+
+/* Print sizing, manager view only, result screen only (data-entry step
+   keeps normal browser size). The exported PNG gets pasted into a Word
+   proposal at roughly half page width next to ~10px Arial body text, so
+   the site's on-screen sizing reads too small once shrunk that far. zoom
+   scales fonts, gaps and padding together — the whole hierarchy grows in
+   lockstep instead of drifting — and html-to-image renders it correctly
+   in the export since it draws through the real browser engine, unlike
+   html2canvas's own reimplemented painter. Tune the factor (or override
+   anything below) via the "Custom CSS" admin field — no deploy needed. */
+.wi_root--manager .wi_step--result {
+  zoom: 1.4;
+}
+
+/* Alignment fix, manager view only: .wi_group--mandatory/--optional carry
+   more of their own inline padding (20px, summary.css) than
+   .wi_group--selected (0, inherits only .wi_card's), so "Applicant type"
+   and "State fee for filing" didn't start at the same x position. Also
+   tightens the outer shell/card padding to reclaim width for the bigger
+   text above. */
+.wi_root--manager .wi_shell {
+  padding-inline: var(--wi_space-lg);
+}
+
+.wi_root--manager .wi_card {
+  padding-inline: var(--wi_space-sm);
+}
+
+.wi_root--manager .wi_group--selected,
+.wi_root--manager .wi_group--mandatory,
+.wi_root--manager .wi_group--optional {
+  padding-inline: var(--wi_space-sm);
 }
