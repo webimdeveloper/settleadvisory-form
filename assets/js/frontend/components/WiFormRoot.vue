@@ -60,8 +60,11 @@ function handleBack() {
       <FormStep
         :formState="formState"
         :config="config"
+        :currency="formState.currency"
+        :managerView="isManagerView"
         @update:mode="handleMode"
         @update:rows="handleRows"
+        @update:currency="handleCurrency"
         @next="handleNext"
       />
     </div>
@@ -73,6 +76,7 @@ function handleBack() {
         :config="config"
         :currency="formState.currency"
         :redirectUrl="config?.redirectUrl"
+        :managerView="isManagerView"
         @back="handleBack"
         @update:currency="handleCurrency"
       />

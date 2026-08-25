@@ -289,6 +289,17 @@
   line-height: normal;
   border-radius: var(--wi_radius-0);
 }
+
+/* Without an explicit :hover/:focus here, the theme's own button:hover
+   style (higher specificity than a bare class since it pairs an element
+   with the pseudo-class) shows through as a stray pink/magenta flash. */
+.wi_actions__add--full:hover,
+.wi_actions__add--full:focus-visible {
+  background-color: color-mix(in srgb, var(--wi_color-primary) 8%, var(--wi_color-surface)) !important;
+  border-color: var(--wi_color-primary) !important;
+  color: var(--wi_color-primary) !important;
+}
+
 .wi_row__control--full:hover {
   background-color: color-mix(
     in srgb,

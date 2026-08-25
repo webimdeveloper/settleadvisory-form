@@ -1,13 +1,18 @@
 <script setup>
 import { defineProps, defineEmits, ref } from 'vue';
 import WiFormInputs from '../WiFormInputs.vue';
+import WiFormCurrencyToggle from '../WiFormCurrencyToggle.vue';
 
 const props = defineProps({
   formState: { type: Object, required: true },
   config: { type: Object, required: true },
+  currency: { type: String, default: 'USD' },
+  // Manager quote view picks currency here, before calculating — the result
+  // screen there is a static snapshot for a screenshot/PDF, not interactive.
+  managerView: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['update:mode', 'update:rows', 'next']);
+const emit = defineEmits(['update:mode', 'update:rows', 'update:currency', 'next']);
 const showError = ref(false);
 
 function handleMode(nextMode) {
@@ -58,6 +63,12 @@ function onNext() {
 
 <template>
   <div class="wi_step wi_step--form">
+    <WiFormCurrencyToggle
+      v-if="managerView"
+      :currency="currency"
+      @update:currency="emit('update:currency', $event)"
+    />
+
     <WiFormInputs
       :mode="formState.mode"
       :rows="formState.rows"

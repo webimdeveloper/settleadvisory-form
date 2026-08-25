@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from "vue";
+import WiFormCurrencyToggle from './WiFormCurrencyToggle.vue';
+
 const props = defineProps({
   summary: {
     type: Object,
@@ -18,6 +20,9 @@ const props = defineProps({
 
   rate: { type: Number, default: 12000 },
   config: { type: Object, default: () => ({}) },
+  // Manager quote view picks currency on the form step instead — this
+  // screen is a static snapshot meant for a screenshot/PDF.
+  managerView: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:currency']);
@@ -162,39 +167,16 @@ const formattedClasses = computed(() => {
   return total;
 });
 
-function onCurrencyChange(e) {
-  emit('update:currency', e.target.value);
-}
 </script>
 
 <template>
   <div class="wi_summary">
 
-<div class="wi_currency-toggle">
-  <input
-    type="radio"
-    name="currency"
-    value="USD"
-    id="currency-usd"
-    :checked="currency === 'USD'"
-    @change="onCurrencyChange"
-  />
-  <label for="currency-usd">USD</label>
-
-  <input
-    type="radio"
-    name="currency"
-    value="UZS"
-    id="currency-uzs"
-    :checked="currency === 'UZS'"
-    @change="onCurrencyChange"
-  />
-  <label for="currency-uzs">UZS</label>
-</div>
-
-
-
-
+    <WiFormCurrencyToggle
+      v-if="!managerView"
+      :currency="currency"
+      @update:currency="emit('update:currency', $event)"
+    />
 
     <div class="wi_card wi_card--totals">
       <div class="wi_group wi_group--selected">
