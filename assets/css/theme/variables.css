@@ -129,6 +129,7 @@
 .wi_root--manager .wi_group--mandatory {
   margin-inline: calc(var(--wi_space-sm) * -1);
   padding-inline: var(--wi_space-sm);
+  background: #f8f8f8;
 }
 
 /* The note paragraphs are siblings of .wi_card, not children of it (see
