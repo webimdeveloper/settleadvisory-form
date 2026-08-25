@@ -39,3 +39,10 @@
   flex-wrap: wrap;
 }
 
+/* Manager quote view's Back control (WiFormRoot.vue) — a real sibling
+   after .wi_shell, not part of the bordered box, so it never appears in a
+   screenshot of the result card. */
+.wi_manager-back-wrap {
+  margin-top: var(--wi_space-md);
+}
+

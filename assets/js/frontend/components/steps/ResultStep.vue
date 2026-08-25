@@ -32,8 +32,9 @@ function onBack() {
       @update:currency="onUpdateCurrency"
     />
 
-    <!-- Manager quote view is a static snapshot for a screenshot/PDF —
-         no back/forward navigation on it. -->
+    <!-- Manager quote view: Request proposal doesn't apply here, and Back
+         renders outside the bordered box instead (see WiFormRoot.vue) so
+         it's not part of what gets screenshotted. -->
     <div class="wi_step__actions" v-if="!managerView">
       <button class="wi_btn wi_btn--secondary wi_btn-to-back" type="button" @click="onBack">{{ config.labels?.back || '← Back' }}</button>
       <a class="wi_btn wi_btn--primary wi_btn-to-contact" :href="redirectUrl || '#'">{{ config.labels?.request_proposal || 'Request proposal' }}</a>

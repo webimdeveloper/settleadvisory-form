@@ -82,5 +82,12 @@ function handleBack() {
       />
     </div>
   </div>
+
+  <!-- Manager quote view: Back lives outside the bordered box on purpose,
+       so a screenshot of the box for a proposal never includes it, but a
+       manager can still fix a typo without reloading and losing input. -->
+  <div v-if="isManagerView && currentStep === 1" class="wi_manager-back-wrap">
+    <button class="wi_btn wi_btn--secondary wi_btn-to-back" type="button" @click="handleBack">{{ config.labels?.back || '← Back' }}</button>
+  </div>
 </template>
 
