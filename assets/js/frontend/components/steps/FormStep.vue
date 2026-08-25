@@ -43,6 +43,18 @@ const formattedValidUntil = computed(() => {
   return `${day}.${month}.${year}`;
 });
 
+// min/max on the <input> only affect the spinner arrows and native form
+// validation, not what you can actually type — clamps every keystroke to
+// a whole 0-100 so "0.7" or "1002" can never reach formState.
+function handleDiscountPercentInput(rawValue) {
+  if (rawValue === '') {
+    emit('update:discountPercent', 0);
+    return;
+  }
+  const clamped = Math.min(100, Math.max(0, Math.round(Number(rawValue))));
+  emit('update:discountPercent', clamped);
+}
+
 // The visible text is a plain span, not the native input itself (which
 // can't be restyled to show DD.MM.YYYY reliably across browsers) — click
 // it anywhere, not just the small calendar icon, to open the real picker
@@ -125,10 +137,10 @@ function onNext() {
         type="number"
         min="0"
         max="100"
-        step="0.01"
+        step="1"
         class="wi_manager-discount__percent"
         :value="discountPercent"
-        @input="emit('update:discountPercent', $event.target.value === '' ? 0 : Number($event.target.value))"
+        @input="handleDiscountPercentInput($event.target.value)"
       />%. {{ config.labels?.discount_due_date_label || 'Due date:' }}
       <span class="wi_manager-discount__date" @click="openDatePicker">
         {{ formattedValidUntil }}

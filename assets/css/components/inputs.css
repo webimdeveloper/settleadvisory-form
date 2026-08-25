@@ -644,10 +644,8 @@
   position: relative;
   display: inline-flex;
   cursor: pointer;
-  font-weight: var(--wi_font-weight-semibold);
+  font: inherit;
   color: var(--wi_color-primary);
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 /* .wi_root prefix required: base/reset.css's ".wi_root input { all: unset }"
