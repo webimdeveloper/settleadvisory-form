@@ -601,32 +601,67 @@
 }
 
 /* Manager view only (discountFieldsEnabled, gated on the wi_code secret
-   in PHP) — plain wide inputs, deliberately not reusing
-   .wi_root input[type="number"] from base.css, which is a square
-   aspect-ratio box sized for the single-digit class-count field. */
+   in PHP) — one inline sentence: "Discount, [%]%. Due date: [date]."
+   Deliberately not .wi_inputs__group: that class carries a
+   :not(:last-child)::after divider line sized for .wi_inputs__panel's own
+   flex gap (see below in this file) — reusing it here, outside that
+   panel, drew the line in the wrong place entirely. */
 .wi_manager-discount {
-  flex-direction: row;
-  gap: var(--wi_space-lg);
-  flex-wrap: wrap;
-}
-
-.wi_manager-discount__field {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--wi_space-2xs);
+  margin: 0;
+  font-size: var(--wi_font-size-base);
+  font-weight: var(--wi_font-weight-medium);
+  color: var(--wi_color-text);
 }
 
-.wi_root .wi_manager-discount__input {
-  height: var(--wi-control-height, calc(var(--wi_step) * 6));
-  width: auto;
-  aspect-ratio: auto;
-  padding-inline: var(--wi_space-sm);
-  text-align: left;
-  font-size: var(--wi_font-size-base);
-  font-weight: var(--wi_font-weight-regular);
+/* !important needed on the sizing/text properties: .wi_root
+   input[type="number"]:not(.wi_stepper-input) (base.css) is a square
+   aspect-ratio box for the class-count field and, with :not()'s argument
+   specificity counted in, out-specifies a plain two-class override. */
+.wi_root .wi_manager-discount__percent {
+  width: 3.5em !important;
+  aspect-ratio: auto !important;
+  height: auto !important;
+  padding: var(--wi_space-3xs) var(--wi_space-2xs) !important;
+  text-align: center !important;
+  font-size: inherit !important;
+  font-weight: var(--wi_font-weight-semibold) !important;
   border: 1px solid var(--wi_color-border-input);
   background: #fff;
   color: var(--wi_color-text);
+}
+
+/* The visible date is this span's own text (DD.MM.YYYY, built in
+   FormStep.vue) — the real <input type="date"> beneath it is fully
+   transparent, stretched to cover the whole span, so a click anywhere
+   on the text opens the native picker (openDatePicker() also calls
+   showPicker() directly, since click-to-open isn't guaranteed on every
+   browser/OS for a native date input). */
+.wi_manager-discount__date {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  font-weight: var(--wi_font-weight-semibold);
+  color: var(--wi_color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* .wi_root prefix required: base/reset.css's ".wi_root input { all: unset }"
+   is specificity 11 (class + element) and otherwise wins over a bare
+   one-class selector (10), resetting position/opacity back to static/1 —
+   exactly the "date shows twice" bug this caused before the fix. */
+.wi_root .wi_manager-discount__date-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
 }
 
 .wi_form-error-note {

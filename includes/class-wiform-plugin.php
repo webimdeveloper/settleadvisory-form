@@ -590,8 +590,8 @@ class WiForm_Plugin {
 			'search_total'               => 'Trademark Search',
 			'accelerated_total'          => 'Priority Examination',
 			'discount_valid_until_note'  => 'The above discount is valid until {date}.',
-			'discount_percent_label'     => 'Discount (%)',
-			'discount_valid_until_label' => 'Valid until',
+			'discount_prefix'            => 'Discount,',
+			'discount_due_date_label'    => 'Due date:',
 		];
 	}
 }

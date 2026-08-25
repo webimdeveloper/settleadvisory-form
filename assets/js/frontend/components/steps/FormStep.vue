@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue';
+import { computed, defineProps, defineEmits, ref } from 'vue';
 import WiFormInputs from '../WiFormInputs.vue';
 import WiFormCurrencyToggle from '../WiFormCurrencyToggle.vue';
 import WiFormLanguageToggle from '../WiFormLanguageToggle.vue';
@@ -31,6 +31,32 @@ const emit = defineEmits([
   'next',
 ]);
 const showError = ref(false);
+const dateInputEl = ref(null);
+
+// discountValidUntil is stored/emitted as YYYY-MM-DD (what the calculator
+// and the native <input type="date"> both expect); displayed as
+// DD.MM.YYYY to match the rest of the app (see WiFormSummary.vue's own
+// date formatting) instead of the browser's own locale-dependent text.
+const formattedValidUntil = computed(() => {
+  const [year, month, day] = (props.discountValidUntil || '').split('-');
+  if (!year || !month || !day) return props.discountValidUntil || '';
+  return `${day}.${month}.${year}`;
+});
+
+// The visible text is a plain span, not the native input itself (which
+// can't be restyled to show DD.MM.YYYY reliably across browsers) — click
+// it anywhere, not just the small calendar icon, to open the real picker
+// underneath. showPicker() is Chrome/Edge 99+, Safari 16.4+; falls back
+// to a normal focus (native browser behavior) elsewhere.
+function openDatePicker() {
+  const el = dateInputEl.value;
+  if (!el) return;
+  if (typeof el.showPicker === 'function') {
+    el.showPicker();
+  } else {
+    el.focus();
+  }
+}
 
 function handleMode(nextMode) {
   emit('update:mode', nextMode);
@@ -93,31 +119,28 @@ function onNext() {
       @update:language="emit('update:language', $event)"
     />
 
-    <div class="wi_inputs__group wi_manager-discount" v-if="managerView && discountFieldsEnabled">
-      <div class="wi_manager-discount__field">
-        <label class="wi_row__label wi_row__label--classes" for="wi-discount-percent">{{ config.labels?.discount_percent_label || 'Discount (%)' }}</label>
+    <p class="wi_manager-discount" v-if="managerView && discountFieldsEnabled">
+      {{ config.labels?.discount_prefix || 'Discount,' }}
+      <input
+        type="number"
+        min="0"
+        max="100"
+        step="0.01"
+        class="wi_manager-discount__percent"
+        :value="discountPercent"
+        @input="emit('update:discountPercent', $event.target.value === '' ? 0 : Number($event.target.value))"
+      />%. {{ config.labels?.discount_due_date_label || 'Due date:' }}
+      <span class="wi_manager-discount__date" @click="openDatePicker">
+        {{ formattedValidUntil }}
         <input
-          id="wi-discount-percent"
-          type="number"
-          min="0"
-          max="100"
-          step="0.01"
-          class="wi_manager-discount__input"
-          :value="discountPercent"
-          @input="emit('update:discountPercent', $event.target.value === '' ? 0 : Number($event.target.value))"
-        />
-      </div>
-      <div class="wi_manager-discount__field">
-        <label class="wi_row__label wi_row__label--classes" for="wi-discount-valid-until">{{ config.labels?.discount_valid_until_label || 'Valid until' }}</label>
-        <input
-          id="wi-discount-valid-until"
+          ref="dateInputEl"
           type="date"
-          class="wi_manager-discount__input"
+          class="wi_manager-discount__date-native"
           :value="discountValidUntil"
           @input="emit('update:discountValidUntil', $event.target.value)"
         />
-      </div>
-    </div>
+      </span>
+    </p>
 
     <WiFormInputs
       :mode="formState.mode"

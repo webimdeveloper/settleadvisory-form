@@ -36,6 +36,15 @@ function handleLanguage(slug) {
   currentLangSlug.value = slug;
 }
 
+// YYYY-MM-DD for the discount field's default — tomorrow, not blank, so
+// the manager sees a real date immediately rather than an empty picker.
+function getTomorrowISODate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 const formState = reactive({
   mode: null, // no default; user must select company or private
   rows: [{ id: 'row-1', classes: 1, searchEnabled: false, accelEnabled: false, trademarkType: '' }],
@@ -44,7 +53,7 @@ const formState = reactive({
   // see discountFieldsEnabled (config.discountFieldsEnabled, PHP-gated on
   // the wi_code secret).
   discountPercent: 0,
-  discountValidUntil: '',
+  discountValidUntil: getTomorrowISODate(),
 });
 
 const currentStep = ref(0); // 0 = form, 1 = result
