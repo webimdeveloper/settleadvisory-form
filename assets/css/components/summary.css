@@ -37,9 +37,16 @@
 .wi_summary .wi_p-note{
     font-size: 13px;
     line-height: 18px;
-    padding-block-start: .7rem;
-    /* padding-block-end: 1.4rem; */
+    margin: 0;
+    padding-block-start: var(--wi_space-md);
     font-style: italic;
+}
+
+/* Notes are a single group: the gap between two consecutive notes is
+   tighter than the gap separating the group from the card above and the
+   actions row below. */
+.wi_summary .wi_p-note + .wi_p-note {
+    padding-block-start: var(--wi_space-2xs);
 }
 
 .wi_stat > span {
@@ -90,6 +97,14 @@
 .wi_price--discounted {
   color: var(--wi_color-text);
   font-weight: var(--wi_font-weight-semibold);
+}
+
+/* .wi_step already applies a var(--wi_space-md) flex gap between the summary
+   and the actions row — .wi_step__actions' own margin-top would double it.
+   Zeroed here (result step only) so the notes-to-button gap matches the
+   card-to-notes gap above. */
+.wi_step--result .wi_step__actions {
+  margin-top: 0;
 }
 
 /* Mandatory registration costs block. Rows stack via flex gap (not padding
