@@ -138,6 +138,59 @@ class WiForm_Plugin {
 		$this->add_admin_numeric_field( 'wiform_accel_state_comb_base_buc', __( 'State fee BUC (Combined): Base', 'wiform' ), 'render_accel_state_comb_base_buc_field', 'wiform_accel_section', '0.01' );
 		$this->add_admin_numeric_field( 'wiform_accel_state_extra_buc', __( 'State fee BUC: Extra class', 'wiform' ), 'render_accel_state_extra_buc_field', 'wiform_accel_section', '0.01' );
 		$this->add_admin_numeric_field( 'wiform_accel_service_cost_uzs', __( 'Service cost (UZS)', 'wiform' ), 'render_accel_service_cost_uzs_field', 'wiform_accel_section' );
+
+		register_setting( 'wiform_options', 'wiform_discount_enabled', [
+			'type'              => 'boolean',
+			'sanitize_callback' => function( $val ) { return ! empty( $val ); },
+			'default'           => false,
+		] );
+		register_setting( 'wiform_options', 'wiform_discount_percent', [
+			'type'              => 'number',
+			'sanitize_callback' => function( $val ) { return max( 0, min( 100, (float) $val ) ); },
+			'default'           => 0,
+		] );
+		register_setting( 'wiform_options', 'wiform_discount_valid_until', [
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '',
+		] );
+
+		add_settings_section(
+			'wiform_discount_section',
+			__( 'Discount', 'wiform' ),
+			null,
+			'wiform'
+		);
+		add_settings_field( 'wiform_discount_enabled', __( 'Enable discount', 'wiform' ), [ $this, 'render_discount_enabled_field' ], 'wiform', 'wiform_discount_section' );
+		add_settings_field( 'wiform_discount_percent', __( 'Discount (%)', 'wiform' ), [ $this, 'render_discount_percent_field' ], 'wiform', 'wiform_discount_section' );
+		add_settings_field( 'wiform_discount_valid_until', __( 'Valid until', 'wiform' ), [ $this, 'render_discount_valid_until_field' ], 'wiform', 'wiform_discount_section' );
+	}
+
+	public function render_discount_enabled_field(): void {
+		$value = get_option( 'wiform_discount_enabled', false );
+		?>
+		<label>
+			<input type="hidden" name="wiform_discount_enabled" value="0">
+			<input type="checkbox" id="wiform_discount_enabled" name="wiform_discount_enabled" value="1" <?php checked( $value ); ?>>
+			<?php esc_html_e( 'Apply a discount to the Service fee and Trademark Search fee.', 'wiform' ); ?>
+		</label>
+		<?php
+	}
+
+	public function render_discount_percent_field(): void {
+		$value = get_option( 'wiform_discount_percent', 0 );
+		?>
+		<input type="number" id="wiform_discount_percent" step="0.01" min="0" max="100" name="wiform_discount_percent" value="<?php echo esc_attr( $value ); ?>" class="regular-text">
+		<p class="description"><?php esc_html_e( 'Percentage off the Service fee and Trademark Search fee. Does not apply to official (state) fees or Priority Examination.', 'wiform' ); ?></p>
+		<?php
+	}
+
+	public function render_discount_valid_until_field(): void {
+		$value = get_option( 'wiform_discount_valid_until', '' );
+		?>
+		<input type="date" id="wiform_discount_valid_until" name="wiform_discount_valid_until" value="<?php echo esc_attr( $value ); ?>" class="regular-text">
+		<p class="description"><?php esc_html_e( 'After this date the discount stops applying automatically. Shown to visitors as a note under the calculator.', 'wiform' ); ?></p>
+		<?php
 	}
 
 	private function add_admin_numeric_field( string $id, string $title, string $callback, string $section, string $step = '1' ): void {
@@ -215,6 +268,23 @@ class WiForm_Plugin {
 				?>
 			</form>
 		</div>
+		<script>
+		( function() {
+			var toggle = document.getElementById( 'wiform_discount_enabled' );
+			var percentRow = document.getElementById( 'wiform_discount_percent' )?.closest( 'tr' );
+			var dateRow = document.getElementById( 'wiform_discount_valid_until' )?.closest( 'tr' );
+			if ( ! toggle || ! percentRow || ! dateRow ) {
+				return;
+			}
+			function sync() {
+				var display = toggle.checked ? '' : 'none';
+				percentRow.style.display = display;
+				dateRow.style.display = display;
+			}
+			toggle.addEventListener( 'change', sync );
+			sync();
+		} )();
+		</script>
 		<?php
 	}
 
@@ -295,6 +365,11 @@ class WiForm_Plugin {
 					'state_extra_buc' => (float) get_option( 'wiform_accel_state_extra_buc', 1 ),
 					'service_uzs'     => (float) get_option( 'wiform_accel_service_cost_uzs', 1200000 ),
 				],
+			],
+			'discount'   => [
+				'enabled'     => (bool) get_option( 'wiform_discount_enabled', false ),
+				'percent'     => (float) get_option( 'wiform_discount_percent', 0 ),
+				'valid_until' => (string) get_option( 'wiform_discount_valid_until', '' ),
 			],
 			'labels'     => $this->get_frontend_labels(),
 		];
@@ -407,6 +482,7 @@ class WiForm_Plugin {
 			'combined_trademark'         => 'Combined mark',
 			'search_total'               => 'Trademark Search',
 			'accelerated_total'          => 'Priority Examination',
+			'discount_valid_until_note'  => 'The above discount is valid until {date}.',
 		];
 	}
 }

@@ -74,10 +74,27 @@
   margin: 0;
 }
 
-.wi_stat--subtotal > span,
-.wi_stat--grand-total > span {
+.wi_stat--subtotal > span {
   font-weight: var(--wi_font-weight-semibold);
   color: var(--wi_color-text);
+}
+
+.wi_price--original {
+  text-decoration: line-through;
+  color: var(--wi_color-text-muted);
+  font-weight: var(--wi_font-weight-regular);
+  margin-inline-end: var(--wi_space-2xs);
+}
+
+.wi_price--discounted {
+  color: var(--wi_color-primary-strong);
+  font-weight: var(--wi_font-weight-semibold);
+}
+
+.wi_summary .wi_p-note--discount {
+  color: var(--wi_color-primary-strong);
+  font-style: normal;
+  font-weight: var(--wi_font-weight-medium);
 }
 
 /* Mandatory registration costs block. Rows stack via flex gap (not padding
@@ -115,22 +132,5 @@
   gap: 16px;
   margin-block-start: var(--wi_space-lg);
   padding-inline: 20px;
-}
-
-/* Grand total sits directly in the card (outside both boxes) but should
-   still line up horizontally with the boxed content above it. Divider goes
-   above it, same as Subtotal's divider above it in the mandatory block. */
-.wi_stat--grand-total {
-  margin-block-start: var(--wi_space-sm);
-  padding-inline: 20px;
-  padding-block-start: var(--wi_space-md);
-  border-top: 1px solid color-mix(in srgb, var(--wi_color-border) 60%, transparent);
-}
-
-/* No Subtotal/Additional Services above it (nothing selected beyond the
-   mandatory block) — Total sits directly under the box with no divider. */
-.wi_stat--grand-total-flush {
-  margin-block-start: 0;
-  border-top: none;
 }
 

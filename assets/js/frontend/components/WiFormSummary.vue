@@ -65,10 +65,20 @@ const formattedStateDutyCert = computed(() => {
   return formatter.value.format(val);
 });
 
+const discount = computed(() => props.summary.discount || { active: false });
+const discountActive = computed(() => !!discount.value.active);
+
 const formattedService = computed(() => {
   const val = props.currency === 'UZS'
     ? (props.summary.totals.serviceUZS ?? (props.summary.totals.serviceUSD * props.rate))
     : props.summary.totals.serviceUSD;
+  return formatter.value.format(val);
+});
+
+const formattedServiceDiscounted = computed(() => {
+  const val = props.currency === 'UZS'
+    ? (props.summary.totals.serviceDiscountedUZS ?? (props.summary.totals.serviceDiscountedUSD * props.rate))
+    : props.summary.totals.serviceDiscountedUSD;
   return formatter.value.format(val);
 });
 
@@ -79,6 +89,13 @@ const formattedSearch = computed(() => {
   return formatter.value.format(val);
 });
 
+const formattedSearchDiscounted = computed(() => {
+  const val = props.currency === 'UZS'
+    ? (props.summary.totals.searchDiscountedUZS ?? (props.summary.totals.searchDiscountedUSD * props.rate))
+    : (props.summary.totals.searchDiscountedUSD ?? 0);
+  return formatter.value.format(val);
+});
+
 const formattedAccel = computed(() => {
   const val = props.currency === 'UZS'
     ? (props.summary.totals.accelUZS ?? (props.summary.totals.accelUSD * props.rate))
@@ -86,8 +103,8 @@ const formattedAccel = computed(() => {
   return formatter.value.format(val);
 });
 
-// Display-only sum of the three mandatory rows (filing + certificate + service).
-// Does not affect the grand total calculation, which is unchanged.
+// Sum of the three mandatory rows (filing + certificate + service), using the
+// discounted service fee once a discount is active.
 const formattedSubtotal = computed(() => {
   const submit = props.currency === 'UZS'
     ? (props.summary.totals.stateDutySubmitUZS ?? (props.summary.totals.stateDutySubmitUSD * props.rate))
@@ -95,9 +112,13 @@ const formattedSubtotal = computed(() => {
   const cert = props.currency === 'UZS'
     ? (props.summary.totals.stateDutyCertUZS ?? (props.summary.totals.stateDutyCertUSD * props.rate))
     : props.summary.totals.stateDutyCertUSD;
-  const service = props.currency === 'UZS'
-    ? (props.summary.totals.serviceUZS ?? (props.summary.totals.serviceUSD * props.rate))
-    : props.summary.totals.serviceUSD;
+  const service = discountActive.value
+    ? (props.currency === 'UZS'
+      ? (props.summary.totals.serviceDiscountedUZS ?? (props.summary.totals.serviceDiscountedUSD * props.rate))
+      : props.summary.totals.serviceDiscountedUSD)
+    : (props.currency === 'UZS'
+      ? (props.summary.totals.serviceUZS ?? (props.summary.totals.serviceUSD * props.rate))
+      : props.summary.totals.serviceUSD);
   return formatter.value.format(submit + cert + service);
 });
 
@@ -108,11 +129,26 @@ const hasAdditionalServices = computed(() => {
   );
 });
 
-const formattedTotal = computed(() => {
-  const val = props.currency === 'UZS'
-    ? (props.summary.totals.totalUZS ?? (props.summary.totals.totalUSD * props.rate))
-    : props.summary.totals.totalUSD;
-  return formatter.value.format(val);
+// Builds "The above discount is valid until September 30, 2026." from the
+// configured valid_until date (parsed as local calendar date, not UTC, so
+// the displayed day never shifts with the visitor's timezone).
+const discountNoteText = computed(() => {
+  if (!discountActive.value) return '';
+  const validUntil = discount.value.validUntil;
+  if (!validUntil) return '';
+
+  const [year, month, day] = validUntil.split('-').map(Number);
+  if (!year || !month || !day) return '';
+
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date(year, month - 1, day));
+
+  const template = props.config.labels?.discount_valid_until_note
+    || 'The above discount is valid until {date}.';
+  return template.replace('{date}', formattedDate);
 });
 
 const formattedClasses = computed(() => {
@@ -191,7 +227,13 @@ function onCurrencyChange(e) {
         </div>
         <div class="wi_stat">
           <span class="wi_stat__label">{{ config.labels?.service || 'Service:' }}</span>
-          <span class="wi_stat__value">{{ formattedService }} {{ currency }}</span>
+          <span class="wi_stat__value">
+            <template v-if="discountActive">
+              <span class="wi_price--original">{{ formattedService }} {{ currency }}</span>
+              <span class="wi_price--discounted">{{ formattedServiceDiscounted }} {{ currency }}</span>
+            </template>
+            <template v-else>{{ formattedService }} {{ currency }}</template>
+          </span>
         </div>
         <div class="wi_stat wi_stat--subtotal" v-if="hasAdditionalServices">
           <span class="wi_stat__label">{{ withColon(config.labels?.subtotal || 'Subtotal') }}</span>
@@ -203,21 +245,23 @@ function onCurrencyChange(e) {
         <p class="wi_group__title">{{ config.labels?.additional_services || 'Additional Services' }}</p>
         <div class="wi_stat" v-if="(summary.totals.searchUZS || summary.totals.searchUSD)">
           <span class="wi_stat__label">{{ withColon(config.labels?.search_total || 'Trademark search') }}</span>
-          <span class="wi_stat__value">{{ formattedSearch }} {{ currency }}</span>
+          <span class="wi_stat__value">
+            <template v-if="discountActive">
+              <span class="wi_price--original">{{ formattedSearch }} {{ currency }}</span>
+              <span class="wi_price--discounted">{{ formattedSearchDiscounted }} {{ currency }}</span>
+            </template>
+            <template v-else>{{ formattedSearch }} {{ currency }}</template>
+          </span>
         </div>
         <div class="wi_stat" v-if="(summary.totals.accelUZS || summary.totals.accelUSD)">
           <span class="wi_stat__label">{{ withColon(config.labels?.accelerated_total || 'Expedited registration') }}</span>
           <span class="wi_stat__value">{{ formattedAccel }} {{ currency }}</span>
         </div>
       </div>
-
-      <div class="wi_stat wi_stat--grand-total" :class="{ 'wi_stat--grand-total-flush': !hasAdditionalServices }">
-        <span class="wi_stat__label">{{ config.labels?.total || 'Total:' }}<sup>*</sup></span>
-        <span class="wi_stat__value">{{ formattedTotal }} {{ currency }}</span>
-      </div>
     </div>
     <p class="wi_p-note">
-      <sup>*</sup> {{ config.labels?.note_text || 'The stated price is for reference only and does not guarantee the final cost.' }}
+      {{ config.labels?.note_text || 'The stated price is for reference only and does not guarantee the final cost.' }}
     </p>
+    <p class="wi_p-note wi_p-note--discount" v-if="discountNoteText">{{ discountNoteText }}</p>
   </div>
 </template>
