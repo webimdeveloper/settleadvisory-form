@@ -11,25 +11,27 @@ function onCurrencyChange(e) {
 </script>
 
 <template>
-  <div class="wi_currency-toggle">
-    <input
-      type="radio"
-      name="currency"
-      value="USD"
-      id="currency-usd"
-      :checked="currency === 'USD'"
-      @change="onCurrencyChange"
-    />
-    <label for="currency-usd">USD</label>
+  <div class="wi_inputs__radio-group wi_inputs__radio-group--inline wi_currency-toggle">
+    <label class="wi_inputs__radio-label">
+      <input
+        type="radio"
+        name="currency"
+        value="USD"
+        :checked="currency === 'USD'"
+        @change="onCurrencyChange"
+      />
+      <span>USD</span>
+    </label>
 
-    <input
-      type="radio"
-      name="currency"
-      value="UZS"
-      id="currency-uzs"
-      :checked="currency === 'UZS'"
-      @change="onCurrencyChange"
-    />
-    <label for="currency-uzs">UZS</label>
+    <label class="wi_inputs__radio-label">
+      <input
+        type="radio"
+        name="currency"
+        value="UZS"
+        :checked="currency === 'UZS'"
+        @change="onCurrencyChange"
+      />
+      <span>UZS</span>
+    </label>
   </div>
 </template>

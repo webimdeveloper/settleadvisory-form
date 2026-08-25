@@ -580,7 +580,3 @@
   line-height: var(--wi_line-height-base);
   color: var(--wi_color-error) !important;
 }
-
-.wi_currency-toggle > input {
-    display: none !important;
-}
