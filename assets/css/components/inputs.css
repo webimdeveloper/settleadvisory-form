@@ -125,10 +125,12 @@
     box-shadow var(--wi_transition-fast);
 }
 
-/* Guards against the theme's blanket button:hover{background:#c36;color:#fff}
-   (see .wi_actions__add--full:hover below for the full explanation) — this
-   is a plain <button>, so it's just as exposed without its own :hover. */
-.wi_root .wi_option-toggle:hover {
+/* Guards against the theme's blanket [type=button]:focus/:hover{background:
+   #c36;color:#fff} (see .wi_actions__add--full below for the full
+   explanation) — a plain click leaves this :focus'd (not just :hover'd),
+   so both are covered, not only :hover. */
+.wi_root .wi_option-toggle:hover,
+.wi_root .wi_option-toggle:focus {
   background: transparent;
   color: var(--wi_color-text);
 }
@@ -299,12 +301,23 @@
 }
 
 /* Without an explicit :hover/:focus here, the active theme's global rule
-   (hello-biz/assets/css/theme.css: button:hover{background-color:#c36;
-   color:#fff}) shows through — its element+pseudo selector out-specifies
-   a bare class. Same root cause behind every other :hover added in this
-   file for a plain <button> (.wi_stepper-btn, .wi_option-toggle, etc). */
+   (hello-biz/assets/css/theme.css) shows through:
+     [type=button],button{border:1px solid #c36;color:#c36}
+     [type=button]:focus,[type=button]:hover,button:focus,button:hover{
+       background-color:#c36;color:#fff}
+   The base (resting) rule ties our own class on specificity, so the border
+   was a coin flip on source order — fixed with !important below. The
+   interactive rule fires on :focus too (a plain mouse click leaves a
+   button :focus'd — Chrome only grants :focus-visible for keyboard
+   activation), so :focus is covered here, not just :focus-visible. Same
+   root cause behind every other :hover/:focus added in this file for a
+   plain <button> (.wi_stepper-btn, .wi_option-toggle, etc). */
+.wi_actions__add--full {
+  border-color: var(--wi_color-primary) !important;
+}
+
 .wi_actions__add--full:hover,
-.wi_actions__add--full:focus-visible {
+.wi_actions__add--full:focus {
   background-color: color-mix(in srgb, var(--wi_color-primary) 8%, var(--wi_color-surface)) !important;
   border-color: var(--wi_color-primary) !important;
   color: var(--wi_color-primary) !important;
@@ -442,7 +455,7 @@
 }
 
 .wi_root .wi_stepper-btn:hover:not(:disabled),
-.wi_root .wi_stepper-btn:focus-visible:not(:disabled) {
+.wi_root .wi_stepper-btn:focus:not(:disabled) {
   background: var(--wi_color-border);
   color: var(--wi_color-primary);
 }

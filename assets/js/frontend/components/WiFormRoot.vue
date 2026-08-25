@@ -120,7 +120,7 @@ async function handleDownloadPng() {
     <div v-if="isManagerView && currentStep === 1" class="wi_manager-back-wrap">
       <button class="wi_btn wi_btn--secondary wi_btn-to-back" type="button" @click="handleBack">{{ config.labels?.back || '← Back' }}</button>
       <button
-        class="wi_btn wi_btn--secondary"
+        class="wi_btn wi_btn--secondary wi_btn-to-download"
         type="button"
         :disabled="isDownloading"
         @click="handleDownloadPng"
