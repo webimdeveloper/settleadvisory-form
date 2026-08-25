@@ -112,7 +112,7 @@
 }
 
 .wi_root--manager .wi_card {
-  padding-inline: var(--wi_space-sm);
+  padding-inline: var(--wi_space-xs);
 }
 
 /* No border, no padding of its own — relies entirely on .wi_card's inset,
@@ -128,8 +128,8 @@
    while the text inside lands exactly where .wi_card's inset already
    puts "Applicant type". */
 .wi_root--manager .wi_group--mandatory {
-  margin-inline: calc(var(--wi_space-sm) * -1);
-  padding-inline: var(--wi_space-sm);
+  margin-inline: calc(var(--wi_space-xs) * -1);
+  padding-inline: var(--wi_space-xs);
   background: #f8f8f8;
 }
 
@@ -138,7 +138,7 @@
    not .wi_card's extra inset too — same fix, same value, so they line up
    with the stat rows instead of sitting further left. */
 .wi_root--manager .wi_summary > .wi_p-note {
-  padding-inline: var(--wi_space-sm);
+  padding-inline: var(--wi_space-xs);
 }
 
 /* The generic disclaimer doesn't add anything to a client-facing quote —
