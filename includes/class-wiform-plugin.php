@@ -191,13 +191,12 @@ class WiForm_Plugin {
 
 	public function render_manager_section_intro(): void {
 		?>
-		<p>
-			<?php esc_html_e( 'The public calculator never shows a discount. To quote a client with a discount, share the secret code below and have them bookmark the manager quote page with it:', 'wiform' ); ?>
-		</p>
-		<p><code>?wi_code=SECRET</code></p>
-		<p>
-			<?php esc_html_e( 'With a valid code, the form gains a Discount (%) and Valid until field, entered per quote — off the Service fee and Trademark Search fee only. Any number of managers can use the same link at the same time — nothing is saved on this page, so different discounts and dates never conflict.', 'wiform' ); ?>
-		</p>
+		<ul style="list-style: disc; margin-left: 1.2em;">
+			<li><?php esc_html_e( 'Use this secret link to generate discounted quotes:', 'wiform' ); ?> <code>?wi_code=SECRET</code></li>
+			<li><?php esc_html_e( 'Unlocks the "Discount (%)" and "Valid until" fields on the quote form.', 'wiform' ); ?></li>
+			<li><?php esc_html_e( 'Discounts apply only to the Service fee and Trademark Search fee.', 'wiform' ); ?></li>
+			<li><?php esc_html_e( 'Multiple managers can use the link simultaneously without data conflicts.', 'wiform' ); ?></li>
+		</ul>
 		<?php
 	}
 
