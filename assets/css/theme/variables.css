@@ -71,3 +71,17 @@
   --wi_transition-fast: 120ms ease;
   --wi_transition-base: 180ms ease;
 }
+
+/* Manager-only view, triggered by ?wiform_view=manager (see main.js). Same
+   markup and layout as the public calculator, but a higher-contrast palette
+   so a screenshot of the result screen stays legible once pasted onto a
+   white page in a commercial proposal — the default grey card fill and
+   muted-grey stat text read as washed out once lifted off the site. */
+.wi_root--manager {
+  --wi_color-surface: #ffffff;
+  --wi_color-surface-muted: #ffffff;
+  --wi_color-border: #c4c4c4;
+  --wi_color-border-secondary: #1a1a1a;
+  --wi_color-text: #111111;
+  --wi_color-text-muted: #333333;
+}

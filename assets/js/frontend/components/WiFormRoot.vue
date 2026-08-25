@@ -15,6 +15,17 @@ const props = defineProps({
   },
 });
 
+// ?wiform_view=manager switches to a higher-contrast palette (see
+// wi_root--manager in variables.css) for screenshotting the result screen
+// into a commercial proposal. Public visitors never see this — no param,
+// no class, identical to today's look.
+let isManagerView = false;
+try {
+  isManagerView = new URLSearchParams(window.location.search).get('wiform_view') === 'manager';
+} catch (e) {
+  isManagerView = false;
+}
+
 const formState = reactive({
   mode: null, // no default; user must select company or private
   rows: [{ id: 'row-1', classes: 1, searchEnabled: false, accelEnabled: false, trademarkType: '' }],
@@ -49,7 +60,7 @@ function handleBack() {
 </script>
 
 <template>
-  <div class="wi_root wi_shell" :data-instance-id="instanceId">
+  <div class="wi_root wi_shell" :class="{ 'wi_root--manager': isManagerView }" :data-instance-id="instanceId">
     <div v-if="currentStep === 0" class="wi_section">
       <!--<h2 class="wi_section__heading">Select applicant type below:</h2>-->
       <FormStep
