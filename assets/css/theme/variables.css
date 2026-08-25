@@ -100,11 +100,12 @@
 }
 
 /* Alignment fix, manager view only: .wi_group--mandatory/--optional carry
-   more of their own inline padding (20px, summary.css) than
-   .wi_group--selected (0, inherits only .wi_card's), so "Applicant type"
-   and "State fee for filing" didn't start at the same x position. Also
-   tightens the outer shell/card padding to reclaim width for the bigger
-   text above. */
+   their own inline padding (20px, summary.css) ON TOP of .wi_card's, while
+   .wi_group--selected has none of its own — so "Applicant type" and
+   "State fee for filing" never started at the same x position. The one
+   inline inset that matters is .wi_card's; every group below must resolve
+   to exactly that, no more, no less. Also tightens the outer shell/card
+   padding to reclaim width for the bigger text above. */
 .wi_root--manager .wi_shell {
   padding-inline: var(--wi_space-lg);
 }
@@ -113,8 +114,27 @@
   padding-inline: var(--wi_space-sm);
 }
 
-.wi_root--manager .wi_group--selected,
-.wi_root--manager .wi_group--mandatory,
+/* No border, no padding of its own — relies entirely on .wi_card's inset,
+   same as .wi_group--selected already (correctly) does. */
 .wi_root--manager .wi_group--optional {
+  padding-inline: 0;
+}
+
+/* Has a visible border, so its text needs breathing room from it — but
+   that padding would push the text past .wi_card's inset otherwise. The
+   negative margin "bleeds" the border back out by the same amount the
+   padding pushes the text in, so the border spans the full card width
+   while the text inside lands exactly where .wi_card's inset already
+   puts "Applicant type". */
+.wi_root--manager .wi_group--mandatory {
+  margin-inline: calc(var(--wi_space-sm) * -1);
+  padding-inline: var(--wi_space-sm);
+}
+
+/* The note paragraphs are siblings of .wi_card, not children of it (see
+   WiFormSummary.vue), so they only inherited .wi_shell's padding above,
+   not .wi_card's extra inset too — same fix, same value, so they line up
+   with the stat rows instead of sitting further left. */
+.wi_root--manager .wi_summary > .wi_p-note {
   padding-inline: var(--wi_space-sm);
 }
