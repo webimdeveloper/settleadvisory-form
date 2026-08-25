@@ -152,3 +152,14 @@
 .wi_root--manager .wi_summary > .wi_p-note:first-of-type + .wi_p-note {
   padding-block-start: var(--wi_space-lg);
 }
+
+/* Only the manager view's note gets this treatment — .wi_p-note is shared
+   with the public disclaimer, which keeps its original italic 13px. */
+.wi_root--manager .wi_summary .wi_p-note {
+  font-size: 14px;
+  font-style: normal;
+}
+
+.wi_p-note__date {
+  color: var(--wi_color-error);
+}

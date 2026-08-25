@@ -151,7 +151,10 @@ const discountNoteText = computed(() => {
 
   const template = props.config.labels?.discount_valid_until_note
     || 'The above discount is valid until {date}.';
-  return template.replace('{date}', formattedDate);
+  // Date wrapped for its own color (matches the discounted-price red) —
+  // the template itself is admin-authored (Polylang string translation,
+  // manage_options-gated), not visitor input, so v-html here is safe.
+  return template.replace('{date}', `<span class="wi_p-note__date">${formattedDate}</span>`);
 });
 
 const formattedClasses = computed(() => {
@@ -242,6 +245,6 @@ const formattedClasses = computed(() => {
     <p class="wi_p-note">
       {{ config.labels?.note_text || 'The stated price is for reference only and does not guarantee the final cost.' }}
     </p>
-    <p class="wi_p-note" v-if="discountNoteText">{{ discountNoteText }}</p>
+    <p class="wi_p-note" v-if="discountNoteText" v-html="discountNoteText"></p>
   </div>
 </template>
