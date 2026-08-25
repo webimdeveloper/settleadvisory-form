@@ -163,5 +163,6 @@
 }
 
 .wi_p-note__date {
-  color: var(--wi_color-error);
+  /* color: var(--wi_color-error); */
+  font-weight: 600;
 }
