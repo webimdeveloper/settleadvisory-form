@@ -15,16 +15,10 @@ const props = defineProps({
   },
 });
 
-// ?wiform_view=manager switches to a higher-contrast palette (see
-// wi_root--manager in variables.css) for screenshotting the result screen
-// into a commercial proposal. Public visitors never see this — no param,
-// no class, identical to today's look.
-let isManagerView = false;
-try {
-  isManagerView = new URLSearchParams(window.location.search).get('wiform_view') === 'manager';
-} catch (e) {
-  isManagerView = false;
-}
+// Set only by the manager quote shortcode's config (never by the public
+// calculator) — switches to a higher-contrast palette (wi_root--manager in
+// variables.css) for screenshotting the result screen into a proposal.
+const isManagerView = !!props.config?.managerView;
 
 const formState = reactive({
   mode: null, // no default; user must select company or private

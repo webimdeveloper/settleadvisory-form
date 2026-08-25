@@ -37,6 +37,11 @@ class WiForm_Plugin {
 
 		// Shortcode for Trademark Calculator.
 		add_shortcode( 'wi_form_trademark', [ $this, 'render_trademark_shortcode' ] );
+
+		// Manager-only quote link (discount via URL, no persisted data — see
+		// render_trademark_manager_shortcode for the parameters).
+		add_shortcode( 'wi_form_trademark_manager', [ $this, 'render_trademark_manager_shortcode' ] );
+		add_action( 'wp_head', [ $this, 'maybe_output_manager_noindex' ], 1 );
 	}
 
 	/**
@@ -139,57 +144,52 @@ class WiForm_Plugin {
 		$this->add_admin_numeric_field( 'wiform_accel_state_extra_buc', __( 'State fee BUC: Extra class', 'wiform' ), 'render_accel_state_extra_buc_field', 'wiform_accel_section', '0.01' );
 		$this->add_admin_numeric_field( 'wiform_accel_service_cost_uzs', __( 'Service cost (UZS)', 'wiform' ), 'render_accel_service_cost_uzs_field', 'wiform_accel_section' );
 
-		register_setting( 'wiform_options', 'wiform_discount_enabled', [
-			'type'              => 'boolean',
-			'sanitize_callback' => function( $val ) { return ! empty( $val ); },
-			'default'           => false,
-		] );
-		register_setting( 'wiform_options', 'wiform_discount_percent', [
-			'type'              => 'number',
-			'sanitize_callback' => function( $val ) { return max( 0, min( 100, (float) $val ) ); },
-			'default'           => 0,
-		] );
-		register_setting( 'wiform_options', 'wiform_discount_valid_until', [
+		register_setting( 'wiform_options', 'wiform_manager_secret', [
 			'type'              => 'string',
 			'sanitize_callback' => 'sanitize_text_field',
 			'default'           => '',
 		] );
+		register_setting( 'wiform_options', 'wiform_manager_custom_css', [
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_textarea_field',
+			'default'           => '',
+		] );
 
 		add_settings_section(
-			'wiform_discount_section',
-			__( 'Discount', 'wiform' ),
-			null,
+			'wiform_manager_section',
+			__( 'Manager Discount Links', 'wiform' ),
+			[ $this, 'render_manager_section_intro' ],
 			'wiform'
 		);
-		add_settings_field( 'wiform_discount_enabled', __( 'Enable discount', 'wiform' ), [ $this, 'render_discount_enabled_field' ], 'wiform', 'wiform_discount_section' );
-		add_settings_field( 'wiform_discount_percent', __( 'Discount (%)', 'wiform' ), [ $this, 'render_discount_percent_field' ], 'wiform', 'wiform_discount_section' );
-		add_settings_field( 'wiform_discount_valid_until', __( 'Valid until', 'wiform' ), [ $this, 'render_discount_valid_until_field' ], 'wiform', 'wiform_discount_section' );
+		add_settings_field( 'wiform_manager_secret', __( 'Secret code', 'wiform' ), [ $this, 'render_manager_secret_field' ], 'wiform', 'wiform_manager_section' );
+		add_settings_field( 'wiform_manager_custom_css', __( 'Custom CSS', 'wiform' ), [ $this, 'render_manager_custom_css_field' ], 'wiform', 'wiform_manager_section' );
 	}
 
-	public function render_discount_enabled_field(): void {
-		$value = get_option( 'wiform_discount_enabled', false );
+	public function render_manager_section_intro(): void {
 		?>
-		<label>
-			<input type="hidden" name="wiform_discount_enabled" value="0">
-			<input type="checkbox" id="wiform_discount_enabled" name="wiform_discount_enabled" value="1" <?php checked( $value ); ?>>
-			<?php esc_html_e( 'Apply a discount to the Service fee and Trademark Search fee.', 'wiform' ); ?>
-		</label>
+		<p>
+			<?php esc_html_e( 'The public calculator never shows a discount. To quote a client with a discount, share the secret code below and have them build a link to the manager quote page with three parameters:', 'wiform' ); ?>
+		</p>
+		<p><code>?wi_code=SECRET&amp;wi_discount=15&amp;wi_valid_until=2026-09-30</code></p>
+		<p>
+			<?php esc_html_e( 'wi_discount is a percent (0-100) off the Service fee and Trademark Search fee only. wi_valid_until is a YYYY-MM-DD date. Any number of managers can build their own links at the same time — nothing is saved on this page, so different discounts and dates never conflict.', 'wiform' ); ?>
+		</p>
 		<?php
 	}
 
-	public function render_discount_percent_field(): void {
-		$value = get_option( 'wiform_discount_percent', 0 );
+	public function render_manager_secret_field(): void {
+		$value = get_option( 'wiform_manager_secret', '' );
 		?>
-		<input type="number" id="wiform_discount_percent" step="0.01" min="0" max="100" name="wiform_discount_percent" value="<?php echo esc_attr( $value ); ?>" class="regular-text">
-		<p class="description"><?php esc_html_e( 'Percentage off the Service fee and Trademark Search fee. Does not apply to official (state) fees or Priority Examination.', 'wiform' ); ?></p>
+		<input type="text" id="wiform_manager_secret" name="wiform_manager_secret" value="<?php echo esc_attr( $value ); ?>" class="regular-text">
+		<p class="description"><?php esc_html_e( 'Required as wi_code in a manager quote link. Changing it invalidates every link already shared.', 'wiform' ); ?></p>
 		<?php
 	}
 
-	public function render_discount_valid_until_field(): void {
-		$value = get_option( 'wiform_discount_valid_until', '' );
+	public function render_manager_custom_css_field(): void {
+		$value = get_option( 'wiform_manager_custom_css', '' );
 		?>
-		<input type="date" id="wiform_discount_valid_until" name="wiform_discount_valid_until" value="<?php echo esc_attr( $value ); ?>" class="regular-text">
-		<p class="description"><?php esc_html_e( 'After this date the discount stops applying automatically. Shown to visitors as a note under the calculator.', 'wiform' ); ?></p>
+		<textarea id="wiform_manager_custom_css" name="wiform_manager_custom_css" rows="8" class="large-text code"><?php echo esc_textarea( $value ); ?></textarea>
+		<p class="description"><?php esc_html_e( 'Optional CSS applied only on the manager quote page, e.g. to fine-tune it for a PDF export. Never affects the public calculator.', 'wiform' ); ?></p>
 		<?php
 	}
 
@@ -268,23 +268,6 @@ class WiForm_Plugin {
 				?>
 			</form>
 		</div>
-		<script>
-		( function() {
-			var toggle = document.getElementById( 'wiform_discount_enabled' );
-			var percentRow = document.getElementById( 'wiform_discount_percent' )?.closest( 'tr' );
-			var dateRow = document.getElementById( 'wiform_discount_valid_until' )?.closest( 'tr' );
-			if ( ! toggle || ! percentRow || ! dateRow ) {
-				return;
-			}
-			function sync() {
-				var display = toggle.checked ? '' : 'none';
-				percentRow.style.display = display;
-				dateRow.style.display = display;
-			}
-			toggle.addEventListener( 'change', sync );
-			sync();
-		} )();
-		</script>
 		<?php
 	}
 
@@ -317,21 +300,16 @@ class WiForm_Plugin {
 	}
 
 	/**
-	 * Shortcode callback: [wi_form_trademark]
+	 * Fee/rate config shared by the public and manager calculators. Never
+	 * includes a discount — each shortcode adds its own (or none).
 	 */
-	public function render_trademark_shortcode( $atts = [], $content = '' ): string {
-
-		// Load assets only when shortcode is used.
-		wp_enqueue_style( 'wiform-frontend' );
-		wp_enqueue_script( 'wiform-frontend' );
-
-		// Default settings (later we will override from admin settings).
+	private function get_calculator_defaults(): array {
 		$service_fee = (float) get_option( 'wiform_service_fee', 2407618 );
 		$buc_uzs     = (int) get_option( 'wiform_buc_uzs', 412000 );
 		$usd_to_uzs  = (float) get_option( 'wiform_usd_to_uzs', 12000 );
 		$vat_rate    = (float) get_option( 'wiform_vat_rate', 0.12 );
 
-		$defaults = [
+		return [
 			'buc_uzs'    => $buc_uzs,
 			'usd_to_uzs' => $usd_to_uzs,
 			'company'    => [
@@ -366,13 +344,48 @@ class WiForm_Plugin {
 					'service_uzs'     => (float) get_option( 'wiform_accel_service_cost_uzs', 1200000 ),
 				],
 			],
-			'discount'   => [
-				'enabled'     => (bool) get_option( 'wiform_discount_enabled', false ),
-				'percent'     => (float) get_option( 'wiform_discount_percent', 0 ),
-				'valid_until' => (string) get_option( 'wiform_discount_valid_until', '' ),
-			],
 			'labels'     => $this->get_frontend_labels(),
 		];
+	}
+
+	/**
+	 * Renders the calculator's mount point, shared by both shortcodes.
+	 */
+	private function render_wiform_container( array $settings, string $calculator = 'trademark' ): string {
+		wp_localize_script( 'wiform-frontend', 'wiformTrademarkSettings', $settings );
+
+		$config_json = wp_json_encode( $settings );
+		$instance_id = wp_unique_id( 'wiform-' );
+
+		ob_start();
+		?>
+
+		<div
+			id="<?php echo esc_attr( $instance_id ); ?>"
+			class="wiform-root"
+			data-wiform-id="<?php echo esc_attr( $instance_id ); ?>"
+			data-wiform-config="<?php echo esc_attr( $config_json ); ?>"
+			data-wiform-calculator="<?php echo esc_attr( $calculator ); ?>"
+		>
+			<noscript><?php esc_html_e( 'Please enable JavaScript to use the WiForm calculator.', 'wiform' ); ?></noscript>
+		</div>
+
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Shortcode callback: [wi_form_trademark]
+	 *
+	 * The public calculator. Never carries a discount.
+	 */
+	public function render_trademark_shortcode( $atts = [], $content = '' ): string {
+
+		// Load assets only when shortcode is used.
+		wp_enqueue_style( 'wiform-frontend' );
+		wp_enqueue_script( 'wiform-frontend' );
+
+		$settings = $this->get_calculator_defaults();
 
 		// Allow shortcode attributes: 'redirectUrl' and an optional JSON 'settings' to override defaults.
 		// Note: WP lowercases all shortcode attributes, so we must match 'redirecturl'.
@@ -384,8 +397,6 @@ class WiForm_Plugin {
 			$atts,
 			'wi_form_trademark'
 		);
-
-		$settings = $defaults;
 
 		// If the user passed a JSON settings payload via shortcode attribute, merge it.
 		if ( ! empty( $atts['settings'] ) ) {
@@ -402,27 +413,71 @@ class WiForm_Plugin {
 			$settings['redirectUrl'] = '/contacts';
 		}
 
-		// Make settings available to JS as window.wiformTrademarkSettings
-		wp_localize_script( 'wiform-frontend', 'wiformTrademarkSettings', $settings );
+		return $this->render_wiform_container( $settings );
+	}
 
-		$config_json = wp_json_encode( $settings );
-		$instance_id = wp_unique_id( 'wiform-' );
+	/**
+	 * Shortcode callback: [wi_form_trademark_manager]
+	 *
+	 * Meant for one unlisted, noindexed page (e.g. an Elementor Canvas page
+	 * with no header/footer). A manager builds a link to that page with
+	 * three query parameters:
+	 *   wi_code        - must match the "Secret code" admin setting
+	 *   wi_discount    - percent (0-100) off Service + Trademark Search only
+	 *   wi_valid_until - YYYY-MM-DD; discount is inactive past this date
+	 * Nothing is persisted, so any number of managers can build their own
+	 * links at once without conflicting. A missing/wrong code, or a missing/
+	 * malformed wi_valid_until, silently renders the calculator with no
+	 * discount — it never reveals whether a secret exists.
+	 */
+	public function render_trademark_manager_shortcode( $atts = [], $content = '' ): string {
 
-		ob_start();
-		?>
+		wp_enqueue_style( 'wiform-frontend' );
+		wp_enqueue_script( 'wiform-frontend' );
 
-		<div
-			id="<?php echo esc_attr( $instance_id ); ?>"
-			class="wiform-root"
-			data-wiform-id="<?php echo esc_attr( $instance_id ); ?>"
-			data-wiform-config="<?php echo esc_attr( $config_json ); ?>"
-			data-wiform-calculator="trademark"
-		>
-			<noscript><?php esc_html_e( 'Please enable JavaScript to use the WiForm calculator.', 'wiform' ); ?></noscript>
-		</div>
+		$settings                 = $this->get_calculator_defaults();
+		$settings['managerView']  = true;
+		$settings['redirectUrl']  = '/contacts';
+		$settings['discount']     = [ 'enabled' => false ];
 
-		<?php
-		return ob_get_clean();
+		$secret = (string) get_option( 'wiform_manager_secret', '' );
+		$code   = isset( $_GET['wi_code'] ) ? sanitize_text_field( wp_unslash( $_GET['wi_code'] ) ) : '';
+
+		if ( $secret !== '' && $code !== '' && hash_equals( $secret, $code ) ) {
+			$percent     = isset( $_GET['wi_discount'] ) ? (float) $_GET['wi_discount'] : 0;
+			$percent     = max( 0, min( 100, $percent ) );
+			$valid_until = isset( $_GET['wi_valid_until'] ) ? sanitize_text_field( wp_unslash( $_GET['wi_valid_until'] ) ) : '';
+			$valid_date_ok = (bool) preg_match( '/^\d{4}-\d{2}-\d{2}$/', $valid_until );
+
+			if ( $percent > 0 && $valid_date_ok ) {
+				$settings['discount'] = [
+					'enabled'     => true,
+					'percent'     => $percent,
+					'valid_until' => $valid_until,
+				];
+			}
+		}
+
+		$custom_css = get_option( 'wiform_manager_custom_css', '' );
+		$output     = $this->render_wiform_container( $settings );
+
+		if ( ! empty( $custom_css ) ) {
+			$output .= '<style>' . wp_strip_all_tags( $custom_css ) . '</style>';
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Keeps manager quote pages out of search results — the page's own
+	 * SEO-plugin setting is a second line of defense, this one doesn't
+	 * depend on remembering to set it.
+	 */
+	public function maybe_output_manager_noindex(): void {
+		$post = get_post();
+		if ( $post && has_shortcode( $post->post_content, 'wi_form_trademark_manager' ) ) {
+			echo "<meta name=\"robots\" content=\"noindex, nofollow\">\n";
+		}
 	}
 
 	public function register_polylang_strings(): void {
