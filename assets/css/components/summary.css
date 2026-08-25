@@ -88,7 +88,7 @@
 
 .wi_price--original {
   text-decoration: line-through;
-  color: var(--wi_color-text-muted);
+  color: var(--wi_color-error);
   font-weight: var(--wi_font-weight-regular);
   font-size: 0.9rem;
   margin-inline-end: var(--wi_space-sm);
