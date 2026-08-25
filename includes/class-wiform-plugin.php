@@ -192,11 +192,11 @@ class WiForm_Plugin {
 	public function render_manager_section_intro(): void {
 		?>
 		<p>
-			<?php esc_html_e( 'The public calculator never shows a discount. To quote a client with a discount, share the secret code below and have them build a link to the manager quote page with three parameters:', 'wiform' ); ?>
+			<?php esc_html_e( 'The public calculator never shows a discount. To quote a client with a discount, share the secret code below and have them bookmark the manager quote page with it:', 'wiform' ); ?>
 		</p>
-		<p><code>?wi_code=SECRET&amp;wi_discount=15&amp;wi_valid_until=2026-09-30</code></p>
+		<p><code>?wi_code=SECRET</code></p>
 		<p>
-			<?php esc_html_e( 'wi_discount is a percent (0-100) off the Service fee and Trademark Search fee only. wi_valid_until is a YYYY-MM-DD date. Any number of managers can build their own links at the same time — nothing is saved on this page, so different discounts and dates never conflict.', 'wiform' ); ?>
+			<?php esc_html_e( 'With a valid code, the form gains a Discount (%) and Valid until field, entered per quote — off the Service fee and Trademark Search fee only. Any number of managers can use the same link at the same time — nothing is saved on this page, so different discounts and dates never conflict.', 'wiform' ); ?>
 		</p>
 		<?php
 	}
@@ -444,42 +444,32 @@ class WiForm_Plugin {
 	 * Shortcode callback: [wi_form_trademark_manager]
 	 *
 	 * Meant for one unlisted, noindexed page (e.g. an Elementor Canvas page
-	 * with no header/footer). A manager builds a link to that page with
-	 * three query parameters:
-	 *   wi_code        - must match the "Secret code" admin setting
-	 *   wi_discount    - percent (0-100) off Service + Trademark Search only
-	 *   wi_valid_until - YYYY-MM-DD; discount is inactive past this date
-	 * Nothing is persisted, so any number of managers can build their own
-	 * links at once without conflicting. A missing/wrong code, or a missing/
-	 * malformed wi_valid_until, silently renders the calculator with no
-	 * discount — it never reveals whether a secret exists.
+	 * with no header/footer). A manager bookmarks a link to that page with
+	 * one query parameter:
+	 *   wi_code - must match the "Secret code" admin setting
+	 * With a valid code, the form step gains Discount (%) and Valid until
+	 * fields — entered per quote, not baked into the URL, since typing a
+	 * number and picking a date is far less error-prone than hand-building
+	 * a query string. Nothing is persisted either way, so any number of
+	 * managers can use the same link at once without conflicting. A
+	 * missing/wrong code hides those fields entirely — it never reveals
+	 * whether a secret exists.
 	 */
 	public function render_trademark_manager_shortcode( $atts = [], $content = '' ): string {
 
 		wp_enqueue_style( 'wiform-frontend' );
 		wp_enqueue_script( 'wiform-frontend' );
 
-		$settings                 = array_merge( $this->get_calculator_defaults(), $this->get_manager_language_data() );
-		$settings['managerView']  = true;
-		$settings['redirectUrl']  = '/contacts';
-		$settings['discount']     = [ 'enabled' => false ];
+		$settings                          = array_merge( $this->get_calculator_defaults(), $this->get_manager_language_data() );
+		$settings['managerView']           = true;
+		$settings['redirectUrl']           = '/contacts';
+		$settings['discountFieldsEnabled'] = false;
 
 		$secret = (string) get_option( 'wiform_manager_secret', '' );
 		$code   = isset( $_GET['wi_code'] ) ? sanitize_text_field( wp_unslash( $_GET['wi_code'] ) ) : '';
 
 		if ( $secret !== '' && $code !== '' && hash_equals( $secret, $code ) ) {
-			$percent     = isset( $_GET['wi_discount'] ) ? (float) $_GET['wi_discount'] : 0;
-			$percent     = max( 0, min( 100, $percent ) );
-			$valid_until = isset( $_GET['wi_valid_until'] ) ? sanitize_text_field( wp_unslash( $_GET['wi_valid_until'] ) ) : '';
-			$valid_date_ok = (bool) preg_match( '/^\d{4}-\d{2}-\d{2}$/', $valid_until );
-
-			if ( $percent > 0 && $valid_date_ok ) {
-				$settings['discount'] = [
-					'enabled'     => true,
-					'percent'     => $percent,
-					'valid_until' => $valid_until,
-				];
-			}
+			$settings['discountFieldsEnabled'] = true;
 		}
 
 		$custom_css = get_option( 'wiform_manager_custom_css', '' );
@@ -600,6 +590,8 @@ class WiForm_Plugin {
 			'search_total'               => 'Trademark Search',
 			'accelerated_total'          => 'Priority Examination',
 			'discount_valid_until_note'  => 'The above discount is valid until {date}.',
+			'discount_percent_label'     => 'Discount (%)',
+			'discount_valid_until_label' => 'Valid until',
 		];
 	}
 }

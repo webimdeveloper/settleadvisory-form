@@ -40,6 +40,11 @@ const formState = reactive({
   mode: null, // no default; user must select company or private
   rows: [{ id: 'row-1', classes: 1, searchEnabled: false, accelEnabled: false, trademarkType: '' }],
   currency: 'USD',
+  // Manager view only, entered on the form step instead of a URL param —
+  // see discountFieldsEnabled (config.discountFieldsEnabled, PHP-gated on
+  // the wi_code secret).
+  discountPercent: 0,
+  discountValidUntil: '',
 });
 
 const currentStep = ref(0); // 0 = form, 1 = result
@@ -59,9 +64,32 @@ function handleCurrency(nextCurrency) {
   formState.currency = nextCurrency;
 }
 
+function handleDiscountPercent(nextPercent) {
+  formState.discountPercent = nextPercent;
+}
+
+function handleDiscountValidUntil(nextDate) {
+  formState.discountValidUntil = nextDate;
+}
+
 function handleNext() {
-  // perform calculation and move to result step
-  results.value = calculateTotals(props.config || {}, formState.rows, formState.mode);
+  // Discount is built from the form fields here, client-side — nothing
+  // server-provided to merge, unlike the rest of the config. Requires
+  // both a percent and a date; a half-filled pair is treated as no
+  // discount rather than guessing what the manager meant.
+  let configForCalc = props.config || {};
+  if (isManagerView && formState.discountPercent > 0 && formState.discountValidUntil) {
+    configForCalc = {
+      ...configForCalc,
+      discount: {
+        enabled: true,
+        percent: formState.discountPercent,
+        valid_until: formState.discountValidUntil,
+      },
+    };
+  }
+
+  results.value = calculateTotals(configForCalc, formState.rows, formState.mode);
   currentStep.value = 1;
 }
 
@@ -111,10 +139,15 @@ async function handleDownloadPng() {
           :managerView="isManagerView"
           :languages="config.languages"
           :currentLang="currentLangSlug"
+          :discountFieldsEnabled="!!config.discountFieldsEnabled"
+          :discountPercent="formState.discountPercent"
+          :discountValidUntil="formState.discountValidUntil"
           @update:mode="handleMode"
           @update:rows="handleRows"
           @update:currency="handleCurrency"
           @update:language="handleLanguage"
+          @update:discountPercent="handleDiscountPercent"
+          @update:discountValidUntil="handleDiscountValidUntil"
           @next="handleNext"
         />
       </div>

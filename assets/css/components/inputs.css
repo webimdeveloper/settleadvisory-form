@@ -600,6 +600,35 @@
   flex:1 !important;
 }
 
+/* Manager view only (discountFieldsEnabled, gated on the wi_code secret
+   in PHP) — plain wide inputs, deliberately not reusing
+   .wi_root input[type="number"] from base.css, which is a square
+   aspect-ratio box sized for the single-digit class-count field. */
+.wi_manager-discount {
+  flex-direction: row;
+  gap: var(--wi_space-lg);
+  flex-wrap: wrap;
+}
+
+.wi_manager-discount__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi_space-2xs);
+}
+
+.wi_root .wi_manager-discount__input {
+  height: var(--wi-control-height, calc(var(--wi_step) * 6));
+  width: auto;
+  aspect-ratio: auto;
+  padding-inline: var(--wi_space-sm);
+  text-align: left;
+  font-size: var(--wi_font-size-base);
+  font-weight: var(--wi_font-weight-regular);
+  border: 1px solid var(--wi_color-border-input);
+  background: #fff;
+  color: var(--wi_color-text);
+}
+
 .wi_form-error-note {
   margin: 0 !important;
   /* padding-top: var(--wi_space-xs); */

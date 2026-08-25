@@ -13,9 +13,23 @@ const props = defineProps({
   managerView: { type: Boolean, default: false },
   languages: { type: Array, default: () => [] },
   currentLang: { type: String, default: '' },
+  // PHP-gated on the wi_code secret (see render_trademark_manager_shortcode)
+  // — false renders no discount fields at all, not just disabled ones, so
+  // a visitor without the code never sees that the feature exists.
+  discountFieldsEnabled: { type: Boolean, default: false },
+  discountPercent: { type: [Number, String], default: 0 },
+  discountValidUntil: { type: String, default: '' },
 });
 
-const emit = defineEmits(['update:mode', 'update:rows', 'update:currency', 'update:language', 'next']);
+const emit = defineEmits([
+  'update:mode',
+  'update:rows',
+  'update:currency',
+  'update:language',
+  'update:discountPercent',
+  'update:discountValidUntil',
+  'next',
+]);
 const showError = ref(false);
 
 function handleMode(nextMode) {
@@ -78,6 +92,32 @@ function onNext() {
       :current="currentLang"
       @update:language="emit('update:language', $event)"
     />
+
+    <div class="wi_inputs__group wi_manager-discount" v-if="managerView && discountFieldsEnabled">
+      <div class="wi_manager-discount__field">
+        <label class="wi_row__label wi_row__label--classes" for="wi-discount-percent">{{ config.labels?.discount_percent_label || 'Discount (%)' }}</label>
+        <input
+          id="wi-discount-percent"
+          type="number"
+          min="0"
+          max="100"
+          step="0.01"
+          class="wi_manager-discount__input"
+          :value="discountPercent"
+          @input="emit('update:discountPercent', $event.target.value === '' ? 0 : Number($event.target.value))"
+        />
+      </div>
+      <div class="wi_manager-discount__field">
+        <label class="wi_row__label wi_row__label--classes" for="wi-discount-valid-until">{{ config.labels?.discount_valid_until_label || 'Valid until' }}</label>
+        <input
+          id="wi-discount-valid-until"
+          type="date"
+          class="wi_manager-discount__input"
+          :value="discountValidUntil"
+          @input="emit('update:discountValidUntil', $event.target.value)"
+        />
+      </div>
+    </div>
 
     <WiFormInputs
       :mode="formState.mode"
