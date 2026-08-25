@@ -138,3 +138,17 @@
 .wi_root--manager .wi_summary > .wi_p-note {
   padding-inline: var(--wi_space-sm);
 }
+
+/* The generic disclaimer doesn't add anything to a client-facing quote —
+   hidden here only (public form keeps it). Discount note (when present)
+   then needs the wider "first note" gap above it instead of the tighter
+   "second note" gap it'd otherwise inherit — that sibling selector in
+   summary.css matches on DOM adjacency, not visibility, so hiding the
+   disclaimer with display:none doesn't change which rule applies. */
+.wi_root--manager .wi_summary > .wi_p-note:first-of-type {
+  display: none;
+}
+
+.wi_root--manager .wi_summary > .wi_p-note:first-of-type + .wi_p-note {
+  padding-block-start: var(--wi_space-lg);
+}

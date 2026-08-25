@@ -86,12 +86,27 @@
   color: var(--wi_color-text);
 }
 
+/* text-decoration: line-through can only draw a flat horizontal line —
+   an angled strike needs its own positioned element instead. */
 .wi_price--original {
-  text-decoration: line-through;
+  position: relative;
+  display: inline-block;
   color: var(--wi_color-error);
   font-weight: var(--wi_font-weight-regular);
   font-size: 0.9rem;
   margin-inline-end: var(--wi_space-sm);
+}
+
+.wi_price--original::after {
+  content: '';
+  position: absolute;
+  left: -3%;
+  right: -3%;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+  transform: translateY(-50%) rotate(-8deg);
+  pointer-events: none;
 }
 
 .wi_price--discounted {
