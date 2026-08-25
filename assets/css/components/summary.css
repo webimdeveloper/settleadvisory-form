@@ -83,18 +83,13 @@
   text-decoration: line-through;
   color: var(--wi_color-text-muted);
   font-weight: var(--wi_font-weight-regular);
-  margin-inline-end: var(--wi_space-2xs);
+  font-size: 0.9rem;
+  margin-inline-end: var(--wi_space-sm);
 }
 
 .wi_price--discounted {
-  color: var(--wi_color-primary-strong);
+  color: var(--wi_color-text);
   font-weight: var(--wi_font-weight-semibold);
-}
-
-.wi_summary .wi_p-note--discount {
-  color: var(--wi_color-primary-strong);
-  font-style: normal;
-  font-weight: var(--wi_font-weight-medium);
 }
 
 /* Mandatory registration costs block. Rows stack via flex gap (not padding

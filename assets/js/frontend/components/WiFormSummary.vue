@@ -262,6 +262,6 @@ function onCurrencyChange(e) {
     <p class="wi_p-note">
       {{ config.labels?.note_text || 'The stated price is for reference only and does not guarantee the final cost.' }}
     </p>
-    <p class="wi_p-note wi_p-note--discount" v-if="discountNoteText">{{ discountNoteText }}</p>
+    <p class="wi_p-note" v-if="discountNoteText">{{ discountNoteText }}</p>
   </div>
 </template>
