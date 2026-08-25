@@ -108,6 +108,7 @@
    padding to reclaim width for the bigger text above. */
 .wi_root--manager .wi_shell {
   padding-inline: var(--wi_space-lg);
+  padding-block-start: calc(var(--wi_padding-block) / 2);
 }
 
 .wi_root--manager .wi_card {
