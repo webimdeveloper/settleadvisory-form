@@ -79,46 +79,53 @@ async function handleDownloadPng() {
 </script>
 
 <template>
-  <div ref="shellEl" class="wi_root wi_shell" :class="{ 'wi_root--manager': isManagerView }" :data-instance-id="instanceId">
-    <div v-if="currentStep === 0" class="wi_section">
-      <!--<h2 class="wi_section__heading">Select applicant type below:</h2>-->
-      <FormStep
-        :formState="formState"
-        :config="config"
-        :currency="formState.currency"
-        :managerView="isManagerView"
-        @update:mode="handleMode"
-        @update:rows="handleRows"
-        @update:currency="handleCurrency"
-        @next="handleNext"
-      />
+  <!-- .wi_root is the real outer scope every .wi_root .wi_btn / component
+       style keys off of (see buttons.css). .wi_shell is just the bordered
+       box — kept separate so the manager-view Back/Download controls below
+       can sit outside the box (and out of its PNG export) while still
+       inheriting the plugin's own styling instead of the browser default. -->
+  <div class="wi_root" :class="{ 'wi_root--manager': isManagerView }" :data-instance-id="instanceId">
+    <div ref="shellEl" class="wi_shell">
+      <div v-if="currentStep === 0" class="wi_section">
+        <!--<h2 class="wi_section__heading">Select applicant type below:</h2>-->
+        <FormStep
+          :formState="formState"
+          :config="config"
+          :currency="formState.currency"
+          :managerView="isManagerView"
+          @update:mode="handleMode"
+          @update:rows="handleRows"
+          @update:currency="handleCurrency"
+          @next="handleNext"
+        />
+      </div>
+
+      <div v-else class="wi_section">
+        <!-- <h2 class="wi_section__heading">Results</h2> -->
+        <ResultStep
+          :results="results"
+          :config="config"
+          :currency="formState.currency"
+          :redirectUrl="config?.redirectUrl"
+          :managerView="isManagerView"
+          @back="handleBack"
+          @update:currency="handleCurrency"
+        />
+      </div>
     </div>
 
-    <div v-else class="wi_section">
-      <!-- <h2 class="wi_section__heading">Results</h2> -->
-      <ResultStep
-        :results="results"
-        :config="config"
-        :currency="formState.currency"
-        :redirectUrl="config?.redirectUrl"
-        :managerView="isManagerView"
-        @back="handleBack"
-        @update:currency="handleCurrency"
-      />
+    <!-- Manager quote view: Back/Download live outside the bordered box on
+         purpose, so a PNG export of the box never includes them, but a
+         manager can still fix a typo without reloading and losing input. -->
+    <div v-if="isManagerView && currentStep === 1" class="wi_manager-back-wrap">
+      <button class="wi_btn wi_btn--secondary wi_btn-to-back" type="button" @click="handleBack">{{ config.labels?.back || '← Back' }}</button>
+      <button
+        class="wi_btn wi_btn--secondary"
+        type="button"
+        :disabled="isDownloading"
+        @click="handleDownloadPng"
+      >{{ isDownloading ? 'Preparing…' : 'Download PNG' }}</button>
     </div>
-  </div>
-
-  <!-- Manager quote view: Back lives outside the bordered box on purpose,
-       so a screenshot of the box for a proposal never includes it, but a
-       manager can still fix a typo without reloading and losing input. -->
-  <div v-if="isManagerView && currentStep === 1" class="wi_manager-back-wrap">
-    <button class="wi_btn wi_btn--secondary wi_btn-to-back" type="button" @click="handleBack">{{ config.labels?.back || '← Back' }}</button>
-    <button
-      class="wi_btn wi_btn--primary"
-      type="button"
-      :disabled="isDownloading"
-      @click="handleDownloadPng"
-    >{{ isDownloading ? 'Preparing…' : 'Download PNG' }}</button>
   </div>
 </template>
 

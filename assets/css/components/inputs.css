@@ -125,6 +125,14 @@
     box-shadow var(--wi_transition-fast);
 }
 
+/* Guards against the theme's blanket button:hover{background:#c36;color:#fff}
+   (see .wi_actions__add--full:hover below for the full explanation) — this
+   is a plain <button>, so it's just as exposed without its own :hover. */
+.wi_root .wi_option-toggle:hover {
+  background: transparent;
+  color: var(--wi_color-text);
+}
+
 .wi_root .wi_option-toggle.is-active {
   color: var(--wi_color-text);
 }
@@ -290,9 +298,11 @@
   border-radius: var(--wi_radius-0);
 }
 
-/* Without an explicit :hover/:focus here, the theme's own button:hover
-   style (higher specificity than a bare class since it pairs an element
-   with the pseudo-class) shows through as a stray pink/magenta flash. */
+/* Without an explicit :hover/:focus here, the active theme's global rule
+   (hello-biz/assets/css/theme.css: button:hover{background-color:#c36;
+   color:#fff}) shows through — its element+pseudo selector out-specifies
+   a bare class. Same root cause behind every other :hover added in this
+   file for a plain <button> (.wi_stepper-btn, .wi_option-toggle, etc). */
 .wi_actions__add--full:hover,
 .wi_actions__add--full:focus-visible {
   background-color: color-mix(in srgb, var(--wi_color-primary) 8%, var(--wi_color-surface)) !important;
@@ -429,6 +439,12 @@
   border: 0;
   outline: none;
   box-shadow: none;
+}
+
+.wi_root .wi_stepper-btn:hover:not(:disabled),
+.wi_root .wi_stepper-btn:focus-visible:not(:disabled) {
+  background: var(--wi_color-border);
+  color: var(--wi_color-primary);
 }
 
 .wi_root .wi_stepper-btn:disabled {
