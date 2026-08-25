@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { calculateTotals } from '../lib/calculations/trademark';
 import FormStep from './steps/FormStep.vue';
 import ResultStep from './steps/ResultStep.vue';
@@ -19,6 +19,22 @@ const props = defineProps({
 // calculator) — switches to a higher-contrast palette (wi_root--manager in
 // variables.css) for screenshotting the result screen into a proposal.
 const isManagerView = !!props.config?.managerView;
+
+// Manager view only: config.labelsByLang holds every active Polylang
+// language's label set (PHP resolves them all up front via
+// pll_translate_string, see get_manager_language_data), so switching here
+// is instant and doesn't reload the page and lose whatever's been typed.
+const currentLangSlug = ref(props.config?.currentLang || props.config?.languages?.[0]?.slug || '');
+
+const activeConfig = computed(() => {
+  const byLang = props.config?.labelsByLang;
+  if (!byLang || !byLang[currentLangSlug.value]) return props.config;
+  return { ...props.config, labels: byLang[currentLangSlug.value] };
+});
+
+function handleLanguage(slug) {
+  currentLangSlug.value = slug;
+}
 
 const formState = reactive({
   mode: null, // no default; user must select company or private
@@ -90,12 +106,15 @@ async function handleDownloadPng() {
         <!--<h2 class="wi_section__heading">Select applicant type below:</h2>-->
         <FormStep
           :formState="formState"
-          :config="config"
+          :config="activeConfig"
           :currency="formState.currency"
           :managerView="isManagerView"
+          :languages="config.languages"
+          :currentLang="currentLangSlug"
           @update:mode="handleMode"
           @update:rows="handleRows"
           @update:currency="handleCurrency"
+          @update:language="handleLanguage"
           @next="handleNext"
         />
       </div>
@@ -104,9 +123,9 @@ async function handleDownloadPng() {
         <!-- <h2 class="wi_section__heading">Results</h2> -->
         <ResultStep
           :results="results"
-          :config="config"
+          :config="activeConfig"
           :currency="formState.currency"
-          :redirectUrl="config?.redirectUrl"
+          :redirectUrl="activeConfig?.redirectUrl"
           :managerView="isManagerView"
           @back="handleBack"
           @update:currency="handleCurrency"
@@ -118,7 +137,7 @@ async function handleDownloadPng() {
          purpose, so a PNG export of the box never includes them, but a
          manager can still fix a typo without reloading and losing input. -->
     <div v-if="isManagerView && currentStep === 1" class="wi_manager-back-wrap">
-      <button class="wi_btn wi_btn--secondary wi_btn-to-back" type="button" @click="handleBack">{{ config.labels?.back || '← Back' }}</button>
+      <button class="wi_btn wi_btn--secondary wi_btn-to-back" type="button" @click="handleBack">{{ activeConfig.labels?.back || '← Back' }}</button>
       <button
         class="wi_btn wi_btn--secondary wi_btn-to-download"
         type="button"

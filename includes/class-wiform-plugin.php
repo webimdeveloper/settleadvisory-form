@@ -459,7 +459,7 @@ class WiForm_Plugin {
 		wp_enqueue_style( 'wiform-frontend' );
 		wp_enqueue_script( 'wiform-frontend' );
 
-		$settings                 = $this->get_calculator_defaults();
+		$settings                 = array_merge( $this->get_calculator_defaults(), $this->get_manager_language_data() );
 		$settings['managerView']  = true;
 		$settings['redirectUrl']  = '/contacts';
 		$settings['discount']     = [ 'enabled' => false ];
@@ -514,12 +514,22 @@ class WiForm_Plugin {
 		}
 	}
 
-	public function get_frontend_labels(): array {
+	/**
+	 * @param string $lang_slug Optional Polylang language slug (e.g. 'ru').
+	 *                          Translates into that specific language
+	 *                          regardless of the current request's language,
+	 *                          for the manager view's language switcher.
+	 *                          Empty string (default) uses the current
+	 *                          request's language, as before.
+	 */
+	public function get_frontend_labels( string $lang_slug = '' ): array {
 		$raw    = $this->get_raw_labels();
 		$labels = [];
 
 		foreach ( $raw as $key => $text ) {
-			if ( function_exists( 'pll__' ) ) {
+			if ( $lang_slug && function_exists( 'pll_translate_string' ) ) {
+				$labels[ $key ] = pll_translate_string( $text, $lang_slug );
+			} elseif ( function_exists( 'pll__' ) ) {
 				$labels[ $key ] = pll__( $text );
 			} else {
 				$labels[ $key ] = __( $text, 'wiform' );
@@ -527,6 +537,34 @@ class WiForm_Plugin {
 		}
 
 		return $labels;
+	}
+
+	/**
+	 * Manager view only: every active Polylang language's label set, plus
+	 * the language list itself, so the frontend can switch languages
+	 * without a page reload (which would lose whatever's already typed in).
+	 */
+	private function get_manager_language_data(): array {
+		if ( ! function_exists( 'pll_languages_list' ) ) {
+			return [];
+		}
+
+		$languages_meta = [];
+		$labels_by_lang = [];
+
+		foreach ( pll_languages_list( [ 'fields' => '' ] ) as $language ) {
+			$languages_meta[]                 = [
+				'slug' => $language->slug,
+				'name' => $language->name,
+			];
+			$labels_by_lang[ $language->slug ] = $this->get_frontend_labels( $language->slug );
+		}
+
+		return [
+			'languages'    => $languages_meta,
+			'labelsByLang' => $labels_by_lang,
+			'currentLang'  => function_exists( 'pll_current_language' ) ? pll_current_language() : '',
+		];
 	}
 
 	private function get_raw_labels(): array {

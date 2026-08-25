@@ -2,6 +2,7 @@
 import { defineProps, defineEmits, ref } from 'vue';
 import WiFormInputs from '../WiFormInputs.vue';
 import WiFormCurrencyToggle from '../WiFormCurrencyToggle.vue';
+import WiFormLanguageToggle from '../WiFormLanguageToggle.vue';
 
 const props = defineProps({
   formState: { type: Object, required: true },
@@ -10,9 +11,11 @@ const props = defineProps({
   // Manager quote view picks currency here, before calculating — the result
   // screen there is a static snapshot for a screenshot/PDF, not interactive.
   managerView: { type: Boolean, default: false },
+  languages: { type: Array, default: () => [] },
+  currentLang: { type: String, default: '' },
 });
 
-const emit = defineEmits(['update:mode', 'update:rows', 'update:currency', 'next']);
+const emit = defineEmits(['update:mode', 'update:rows', 'update:currency', 'update:language', 'next']);
 const showError = ref(false);
 
 function handleMode(nextMode) {
@@ -67,6 +70,13 @@ function onNext() {
       v-if="managerView"
       :currency="currency"
       @update:currency="emit('update:currency', $event)"
+    />
+
+    <WiFormLanguageToggle
+      v-if="managerView && languages.length > 1"
+      :languages="languages"
+      :current="currentLang"
+      @update:language="emit('update:language', $event)"
     />
 
     <WiFormInputs
