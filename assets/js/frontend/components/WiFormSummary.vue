@@ -134,9 +134,10 @@ const hasAdditionalServices = computed(() => {
   );
 });
 
-// Builds "The above discount is valid until September 30, 2026." from the
-// configured valid_until date (parsed as local calendar date, not UTC, so
-// the displayed day never shifts with the visitor's timezone).
+// Builds "The above discount is valid until 30.09.2026." from the
+// configured valid_until date. DD.MM.YYYY rather than a spelled-out month
+// name since the note is shown in both English and Russian and this
+// format needs no locale-specific translation.
 const discountNoteText = computed(() => {
   if (!discountActive.value) return '';
   const validUntil = discount.value.validUntil;
@@ -145,11 +146,8 @@ const discountNoteText = computed(() => {
   const [year, month, day] = validUntil.split('-').map(Number);
   if (!year || !month || !day) return '';
 
-  const formattedDate = new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date(year, month - 1, day));
+  const pad = (n) => String(n).padStart(2, '0');
+  const formattedDate = `${pad(day)}.${pad(month)}.${year}`;
 
   const template = props.config.labels?.discount_valid_until_note
     || 'The above discount is valid until {date}.';
