@@ -1,4 +1,9 @@
-/* Localized button styles scoped under .wi_root to avoid leaking into WP admin/theme */
+/* Localized button styles scoped under .wi_root to avoid leaking into WP admin/theme.
+   The active theme (hello-biz) ships a global button style with its own
+   :focus/:hover state — after a plain mouse click a button stays :focus'd
+   (Chrome only grants :focus-visible for keyboard activation), so every
+   rule below pairs :hover with :focus, not just :hover, or the theme's
+   red/white flash shows right after any of these buttons is clicked. */
 .wi_root .wi_btn {
   display: inline-flex;
   align-items: center;
@@ -22,9 +27,11 @@
   border-color: var(--wi_color-primary);
 }
 
-.wi_root .wi_btn--primary:hover {
+.wi_root .wi_btn--primary:hover,
+.wi_root .wi_btn--primary:focus {
   background-color: var(--wi_color-primary-strong);
   border-color: var(--wi_color-primary-strong);
+  color: white;
 }
 
 .wi_root .wi_btn--primary:active {
@@ -37,8 +44,10 @@
   border-color: var(--wi_color-border);
 }
 
-.wi_root .wi_btn--secondary:hover {
+.wi_root .wi_btn--secondary:hover,
+.wi_root .wi_btn--secondary:focus {
   background-color: var(--wi_color-border);
+  color: var(--wi_color-text);
 }
 
 .wi_root .wi_btn[disabled],
@@ -67,7 +76,15 @@
   background-color: transparent;
 }
 
-.wi_root .wi_btn-to-back:hover {
+.wi_root .wi_btn-to-back:hover,
+.wi_root .wi_btn-to-back:focus {
   background-color: transparent;
   color: var(--wi_color-primary-strong);
+}
+
+.wi_root .wi_btn-to-download:hover,
+.wi_root .wi_btn-to-download:focus {
+  background-color: transparent;
+  border-color: var(--wi_color-primary);
+  color: var(--wi_color-primary);
 }

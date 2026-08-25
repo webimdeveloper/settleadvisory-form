@@ -71,3 +71,98 @@
   --wi_transition-fast: 120ms ease;
   --wi_transition-base: 180ms ease;
 }
+
+/* Manager-only view ([wi_form_trademark_manager], config.managerView).
+   Same markup and layout as the public calculator, but a higher-contrast
+   palette so a PNG export of the result screen stays legible once pasted
+   onto a white page in a commercial proposal — the default grey card fill
+   and muted-grey stat text read as washed out once lifted off the site. */
+.wi_root--manager {
+  --wi_color-surface: #ffffff;
+  --wi_color-surface-muted: #ffffff;
+  --wi_color-border: #c4c4c4;
+  --wi_color-border-secondary: #1a1a1a;
+  --wi_color-text: #111111;
+  --wi_color-text-muted: #333333;
+}
+
+/* Print sizing, manager view only, result screen only (data-entry step
+   keeps normal browser size). The exported PNG gets pasted into a Word
+   proposal at roughly half page width next to ~10px Arial body text, so
+   the site's on-screen sizing reads too small once shrunk that far. zoom
+   scales fonts, gaps and padding together — the whole hierarchy grows in
+   lockstep instead of drifting — and html-to-image renders it correctly
+   in the export since it draws through the real browser engine, unlike
+   html2canvas's own reimplemented painter. Tune the factor (or override
+   anything below) via the "Custom CSS" admin field — no deploy needed. */
+.wi_root--manager .wi_step--result {
+  zoom: 1.4;
+}
+
+/* Alignment fix, manager view only: .wi_group--mandatory/--optional carry
+   their own inline padding (20px, summary.css) ON TOP of .wi_card's, while
+   .wi_group--selected has none of its own — so "Applicant type" and
+   "State fee for filing" never started at the same x position. The one
+   inline inset that matters is .wi_card's; every group below must resolve
+   to exactly that, no more, no less. Also tightens the outer shell/card
+   padding to reclaim width for the bigger text above. */
+.wi_root--manager .wi_shell {
+  padding-inline: var(--wi_space-lg);
+  padding-block-start: calc(var(--wi_padding-block) / 2);
+}
+
+.wi_root--manager .wi_card {
+  padding-inline: var(--wi_space-xs);
+}
+
+/* No border, no padding of its own — relies entirely on .wi_card's inset,
+   same as .wi_group--selected already (correctly) does. */
+.wi_root--manager .wi_group--optional {
+  padding-inline: 0;
+}
+
+/* Has a visible border, so its text needs breathing room from it — but
+   that padding would push the text past .wi_card's inset otherwise. The
+   negative margin "bleeds" the border back out by the same amount the
+   padding pushes the text in, so the border spans the full card width
+   while the text inside lands exactly where .wi_card's inset already
+   puts "Applicant type". */
+.wi_root--manager .wi_group--mandatory {
+  margin-inline: calc(var(--wi_space-xs) * -1);
+  padding-inline: var(--wi_space-xs);
+  background: #f8f8f8;
+}
+
+/* The note paragraphs are siblings of .wi_card, not children of it (see
+   WiFormSummary.vue), so they only inherited .wi_shell's padding above,
+   not .wi_card's extra inset too — same fix, same value, so they line up
+   with the stat rows instead of sitting further left. */
+.wi_root--manager .wi_summary > .wi_p-note {
+  padding-inline: var(--wi_space-xs);
+}
+
+/* The generic disclaimer doesn't add anything to a client-facing quote —
+   hidden here only (public form keeps it). Discount note (when present)
+   then needs the wider "first note" gap above it instead of the tighter
+   "second note" gap it'd otherwise inherit — that sibling selector in
+   summary.css matches on DOM adjacency, not visibility, so hiding the
+   disclaimer with display:none doesn't change which rule applies. */
+.wi_root--manager .wi_summary > .wi_p-note:first-of-type {
+  display: none;
+}
+
+.wi_root--manager .wi_summary > .wi_p-note:first-of-type + .wi_p-note {
+  padding-block-start: var(--wi_space-lg);
+}
+
+/* Only the manager view's note gets this treatment — .wi_p-note is shared
+   with the public disclaimer, which keeps its original italic 13px. */
+.wi_root--manager .wi_summary .wi_p-note {
+  font-size: 14px;
+  font-style: normal;
+}
+
+.wi_p-note__date {
+  /* color: var(--wi_color-error); */
+  font-weight: 600;
+}
