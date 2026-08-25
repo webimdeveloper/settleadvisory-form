@@ -38,7 +38,7 @@
     font-size: 13px;
     line-height: 18px;
     margin: 0;
-    padding-block-start: var(--wi_space-md);
+    padding-block-start: var(--wi_space-lg);
     font-style: italic;
 }
 
@@ -99,10 +99,14 @@
   font-weight: var(--wi_font-weight-semibold);
 }
 
-/* .wi_step already applies a var(--wi_space-md) flex gap between the summary
-   and the actions row — .wi_step__actions' own margin-top would double it.
-   Zeroed here (result step only) so the notes-to-button gap matches the
-   card-to-notes gap above. */
+/* .wi_step's flex gap (result step only, overridden to match the notes'
+   padding-block-start below) is the single source of the notes-to-button
+   gap — .wi_step__actions' own margin-top would double it, so it's zeroed
+   here. Keeps FormStep's button spacing untouched. */
+.wi_step--result {
+  gap: var(--wi_space-lg);
+}
+
 .wi_step--result .wi_step__actions {
   margin-top: 0;
 }
