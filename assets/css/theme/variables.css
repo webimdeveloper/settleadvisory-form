@@ -158,7 +158,7 @@
 /* Only the manager view's note gets this treatment — .wi_p-note is shared
    with the public disclaimer, which keeps its original italic 13px. */
 .wi_root--manager .wi_summary .wi_p-note {
-  font-size: 14px;
+  font-size: 13px;
   font-style: normal;
 }
 
