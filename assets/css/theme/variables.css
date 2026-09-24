@@ -86,19 +86,6 @@
   --wi_color-text-muted: #333333;
 }
 
-/* Print sizing, manager view only, result screen only (data-entry step
-   keeps normal browser size). The exported PNG gets pasted into a Word
-   proposal at roughly half page width next to ~10px Arial body text, so
-   the site's on-screen sizing reads too small once shrunk that far. zoom
-   scales fonts, gaps and padding together — the whole hierarchy grows in
-   lockstep instead of drifting — and html-to-image renders it correctly
-   in the export since it draws through the real browser engine, unlike
-   html2canvas's own reimplemented painter. Tune the factor (or override
-   anything below) via the "Custom CSS" admin field — no deploy needed. */
-.wi_root--manager .wi_step--result {
-  zoom: 1.4;
-}
-
 /* Alignment fix, manager view only: .wi_group--mandatory/--optional carry
    their own inline padding (20px, summary.css) ON TOP of .wi_card's, while
    .wi_group--selected has none of its own — so "Applicant type" and

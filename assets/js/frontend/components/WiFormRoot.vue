@@ -115,9 +115,23 @@ async function handleDownloadPng() {
   isDownloading.value = true;
   try {
     const { toPng } = await import('html-to-image');
+    // The exported PNG gets pasted into a Word proposal at roughly half page
+    // width next to ~10px Arial body text, so on-screen sizing reads too
+    // small once shrunk that far. `style` is copied onto an offscreen clone
+    // before rendering (html-to-image's apply-style.js), never onto the live
+    // DOM, so applying zoom there doesn't touch the manager's on-screen view
+    // — but html-to-image sizes its output canvas from the *live* node's
+    // current dimensions before the clone's zoom is applied, so without
+    // scaling width/height by the same factor the zoomed content just
+    // overflows that canvas and gets cropped. Both must move together.
+    const exportScale = 1.4;
+    const rect = shellEl.value.getBoundingClientRect();
     const dataUrl = await toPng(shellEl.value, {
       pixelRatio: 3,
       backgroundColor: '#ffffff',
+      width: rect.width * exportScale,
+      height: rect.height * exportScale,
+      style: { zoom: String(exportScale) },
     });
     const link = document.createElement('a');
     link.download = `trademark-quote-${Date.now()}.png`;
