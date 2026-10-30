@@ -1,3 +1,20 @@
+// A discount is active only while enabled, has a positive percent, and (if a
+// validity date is set) today has not passed it yet.
+function resolveDiscount(discountCfg = {}) {
+  const percent = Math.max(0, Math.min(100, Number(discountCfg.percent) || 0));
+  const validUntil = discountCfg.valid_until || '';
+  let active = !!discountCfg.enabled && percent > 0;
+
+  if (active && validUntil) {
+    const end = new Date(`${validUntil}T23:59:59`);
+    if (!Number.isNaN(end.getTime()) && new Date() > end) {
+      active = false;
+    }
+  }
+
+  return { active, percent, validUntil };
+}
+
 export function calculateTotals(configRoot = {}, rows = [], mode = 'company') {
   const cfg = configRoot?.[mode] || {};
   const bucUzs = Number(configRoot?.buc_uzs) || 412000;
@@ -57,14 +74,24 @@ export function calculateTotals(configRoot = {}, rows = [], mode = 'company') {
   // Calculate Service Fee in UZS
   const servicePerTmUZS = Number(cfg.service_fee_uzs) || 0;
   const serviceUZS = servicePerTmUZS * safeRows.length;
-  const totalUZS = stateDutyUZS + serviceUZS + searchUZS + accelUZS;
+
+  // Discount applies only to the Service fee and the Trademark Search fee —
+  // never to official state fees or Priority Examination.
+  const discount = resolveDiscount(configRoot?.discount);
+  const discountFactor = discount.active ? 1 - discount.percent / 100 : 1;
+  const serviceDiscountedUZS = serviceUZS * discountFactor;
+  const searchDiscountedUZS = searchUZS * discountFactor;
+
+  const totalUZS = stateDutyUZS + serviceDiscountedUZS + searchDiscountedUZS + accelUZS;
 
   // Convert to USD and round
   const stateDutySubmitUSD = Math.round(stateDutySubmitUZS / exchangeRate);
   const stateDutyCertUSD = Math.round(stateDutyCertUZS / exchangeRate);
   const stateDutyUSD = stateDutySubmitUSD + stateDutyCertUSD;
   const serviceUSD = Math.round(serviceUZS / exchangeRate);
+  const serviceDiscountedUSD = Math.round(serviceDiscountedUZS / exchangeRate);
   const searchUSD = Math.round(searchUZS / exchangeRate);
+  const searchDiscountedUSD = Math.round(searchDiscountedUZS / exchangeRate);
   const accelUSD = Math.round(accelUZS / exchangeRate);
   const totalUSD = Math.round(totalUZS / exchangeRate);
 
@@ -73,13 +100,16 @@ export function calculateTotals(configRoot = {}, rows = [], mode = 'company') {
     trademarks: safeRows.length,
     classes,
     classCounts,
+    discount,
     totals: {
       // Primary USD values for display
       stateDutySubmitUSD,
       stateDutyCertUSD,
       stateDutyUSD,
       serviceUSD,
+      serviceDiscountedUSD,
       searchUSD,
+      searchDiscountedUSD,
       accelUSD,
       totalUSD,
       // Optional: Pass UZS values if needed for debugging/display
@@ -87,7 +117,9 @@ export function calculateTotals(configRoot = {}, rows = [], mode = 'company') {
       stateDutyCertUZS,
       stateDutyUZS,
       serviceUZS,
+      serviceDiscountedUZS,
       searchUZS,
+      searchDiscountedUZS,
       accelUZS,
       totalUZS,
     },

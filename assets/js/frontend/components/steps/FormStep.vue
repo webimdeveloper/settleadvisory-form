@@ -1,14 +1,74 @@
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue';
+import { computed, defineProps, defineEmits, ref } from 'vue';
 import WiFormInputs from '../WiFormInputs.vue';
+import WiFormCurrencyToggle from '../WiFormCurrencyToggle.vue';
+import WiFormLanguageToggle from '../WiFormLanguageToggle.vue';
 
 const props = defineProps({
   formState: { type: Object, required: true },
   config: { type: Object, required: true },
+  currency: { type: String, default: 'USD' },
+  // Manager quote view picks currency here, before calculating — the result
+  // screen there is a static snapshot for a screenshot/PDF, not interactive.
+  managerView: { type: Boolean, default: false },
+  languages: { type: Array, default: () => [] },
+  currentLang: { type: String, default: '' },
+  // PHP-gated on the wi_code secret (see render_trademark_manager_shortcode)
+  // — false renders no discount fields at all, not just disabled ones, so
+  // a visitor without the code never sees that the feature exists.
+  discountFieldsEnabled: { type: Boolean, default: false },
+  discountPercent: { type: [Number, String], default: 0 },
+  discountValidUntil: { type: String, default: '' },
 });
 
-const emit = defineEmits(['update:mode', 'update:rows', 'next']);
+const emit = defineEmits([
+  'update:mode',
+  'update:rows',
+  'update:currency',
+  'update:language',
+  'update:discountPercent',
+  'update:discountValidUntil',
+  'next',
+]);
 const showError = ref(false);
+const dateInputEl = ref(null);
+
+// discountValidUntil is stored/emitted as YYYY-MM-DD (what the calculator
+// and the native <input type="date"> both expect); displayed as
+// DD.MM.YYYY to match the rest of the app (see WiFormSummary.vue's own
+// date formatting) instead of the browser's own locale-dependent text.
+const formattedValidUntil = computed(() => {
+  const [year, month, day] = (props.discountValidUntil || '').split('-');
+  if (!year || !month || !day) return props.discountValidUntil || '';
+  return `${day}.${month}.${year}`;
+});
+
+// min/max on the <input> only affect the spinner arrows and native form
+// validation, not what you can actually type — clamps every keystroke to
+// a whole 0-100 so "0.7" or "1002" can never reach formState.
+function handleDiscountPercentInput(rawValue) {
+  if (rawValue === '') {
+    emit('update:discountPercent', 0);
+    return;
+  }
+  const clamped = Math.min(100, Math.max(0, Math.round(Number(rawValue))));
+  emit('update:discountPercent', clamped);
+}
+
+// The visible text is a plain span, not the native input itself (which
+// can't be restyled to show DD.MM.YYYY reliably across browsers) — click
+// it anywhere, not just the small calendar icon, to open the real picker
+// underneath. showPicker() is Chrome/Edge 99+, Safari 16.4+; falls back
+// to a normal focus (native browser behavior) elsewhere.
+function openDatePicker() {
+  const el = dateInputEl.value;
+  if (!el) return;
+  if (typeof el.showPicker === 'function') {
+    el.showPicker();
+  } else {
+    el.focus();
+  }
+}
 
 function handleMode(nextMode) {
   emit('update:mode', nextMode);
@@ -58,6 +118,42 @@ function onNext() {
 
 <template>
   <div class="wi_step wi_step--form">
+    <WiFormCurrencyToggle
+      v-if="managerView"
+      :currency="currency"
+      @update:currency="emit('update:currency', $event)"
+    />
+
+    <WiFormLanguageToggle
+      v-if="managerView && languages.length > 1"
+      :languages="languages"
+      :current="currentLang"
+      @update:language="emit('update:language', $event)"
+    />
+
+    <p class="wi_manager-discount" v-if="managerView && discountFieldsEnabled">
+      {{ config.labels?.discount_prefix || 'Discount,' }}
+      <input
+        type="number"
+        min="0"
+        max="100"
+        step="1"
+        class="wi_manager-discount__percent"
+        :value="discountPercent"
+        @input="handleDiscountPercentInput($event.target.value)"
+      />%. {{ config.labels?.discount_due_date_label || 'Due date:' }}
+      <span class="wi_manager-discount__date" @click="openDatePicker">
+        {{ formattedValidUntil }}
+        <input
+          ref="dateInputEl"
+          type="date"
+          class="wi_manager-discount__date-native"
+          :value="discountValidUntil"
+          @input="emit('update:discountValidUntil', $event.target.value)"
+        />
+      </span>
+    </p>
+
     <WiFormInputs
       :mode="formState.mode"
       :rows="formState.rows"

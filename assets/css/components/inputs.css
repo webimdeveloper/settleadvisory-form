@@ -125,6 +125,16 @@
     box-shadow var(--wi_transition-fast);
 }
 
+/* Guards against the theme's blanket [type=button]:focus/:hover{background:
+   #c36;color:#fff} (see .wi_actions__add--full below for the full
+   explanation) — a plain click leaves this :focus'd (not just :hover'd),
+   so both are covered, not only :hover. */
+.wi_root .wi_option-toggle:hover,
+.wi_root .wi_option-toggle:focus {
+  background: transparent;
+  color: var(--wi_color-text);
+}
+
 .wi_root .wi_option-toggle.is-active {
   color: var(--wi_color-text);
 }
@@ -289,6 +299,30 @@
   line-height: normal;
   border-radius: var(--wi_radius-0);
 }
+
+/* Without an explicit :hover/:focus here, the active theme's global rule
+   (hello-biz/assets/css/theme.css) shows through:
+     [type=button],button{border:1px solid #c36;color:#c36}
+     [type=button]:focus,[type=button]:hover,button:focus,button:hover{
+       background-color:#c36;color:#fff}
+   The base (resting) rule ties our own class on specificity, so the border
+   was a coin flip on source order — fixed with !important below. The
+   interactive rule fires on :focus too (a plain mouse click leaves a
+   button :focus'd — Chrome only grants :focus-visible for keyboard
+   activation), so :focus is covered here, not just :focus-visible. Same
+   root cause behind every other :hover/:focus added in this file for a
+   plain <button> (.wi_stepper-btn, .wi_option-toggle, etc). */
+.wi_actions__add--full {
+  border-color: var(--wi_color-primary) !important;
+}
+
+.wi_actions__add--full:hover,
+.wi_actions__add--full:focus {
+  background-color: color-mix(in srgb, var(--wi_color-primary) 8%, var(--wi_color-surface)) !important;
+  border-color: var(--wi_color-primary) !important;
+  color: var(--wi_color-primary) !important;
+}
+
 .wi_row__control--full:hover {
   background-color: color-mix(
     in srgb,
@@ -418,6 +452,12 @@
   border: 0;
   outline: none;
   box-shadow: none;
+}
+
+.wi_root .wi_stepper-btn:hover:not(:disabled),
+.wi_root .wi_stepper-btn:focus:not(:disabled) {
+  background: var(--wi_color-border);
+  color: var(--wi_color-primary);
 }
 
 .wi_root .wi_stepper-btn:disabled {
@@ -560,6 +600,68 @@
   flex:1 !important;
 }
 
+/* Manager view only (discountFieldsEnabled, gated on the wi_code secret
+   in PHP) — one inline sentence: "Discount, [%]%. Due date: [date]."
+   Deliberately not .wi_inputs__group: that class carries a
+   :not(:last-child)::after divider line sized for .wi_inputs__panel's own
+   flex gap (see below in this file) — reusing it here, outside that
+   panel, drew the line in the wrong place entirely. */
+.wi_manager-discount {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wi_space-2xs);
+  margin: 0;
+  font-size: var(--wi_font-size-base);
+  font-weight: var(--wi_font-weight-medium);
+  color: var(--wi_color-text);
+}
+
+/* !important needed on the sizing/text properties: .wi_root
+   input[type="number"]:not(.wi_stepper-input) (base.css) is a square
+   aspect-ratio box for the class-count field and, with :not()'s argument
+   specificity counted in, out-specifies a plain two-class override. */
+.wi_root .wi_manager-discount__percent {
+  width: 3.5em !important;
+  aspect-ratio: auto !important;
+  height: auto !important;
+  padding: var(--wi_space-3xs) var(--wi_space-2xs) !important;
+  text-align: center !important;
+  font-size: inherit !important;
+  font-weight: var(--wi_font-weight-semibold) !important;
+  border: 1px solid var(--wi_color-border-input);
+  background: #fff;
+  color: var(--wi_color-text);
+}
+
+/* The visible date is this span's own text (DD.MM.YYYY, built in
+   FormStep.vue) — the real <input type="date"> beneath it is fully
+   transparent, stretched to cover the whole span, so a click anywhere
+   on the text opens the native picker (openDatePicker() also calls
+   showPicker() directly, since click-to-open isn't guaranteed on every
+   browser/OS for a native date input). */
+.wi_manager-discount__date {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  font: inherit;
+  color: var(--wi_color-primary);
+}
+
+/* .wi_root prefix required: base/reset.css's ".wi_root input { all: unset }"
+   is specificity 11 (class + element) and otherwise wins over a bare
+   one-class selector (10), resetting position/opacity back to static/1 —
+   exactly the "date shows twice" bug this caused before the fix. */
+.wi_root .wi_manager-discount__date-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+}
+
 .wi_form-error-note {
   margin: 0 !important;
   /* padding-top: var(--wi_space-xs); */
@@ -568,8 +670,4 @@
   font-weight: 400;
   line-height: var(--wi_line-height-base);
   color: var(--wi_color-error) !important;
-}
-
-.wi_currency-toggle > input {
-    display: none !important;
 }

@@ -39,3 +39,13 @@
   flex-wrap: wrap;
 }
 
+/* Manager quote view's Back/Download controls (WiFormRoot.vue) — real
+   siblings after .wi_shell, not part of the bordered box, so they never
+   appear in a PNG export of the result card. */
+.wi_manager-back-wrap {
+  display: flex;
+  gap: var(--wi_space-md);
+  margin-top: var(--wi_space-md);
+  flex-wrap: wrap;
+}
+

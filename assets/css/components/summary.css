@@ -37,9 +37,16 @@
 .wi_summary .wi_p-note{
     font-size: 13px;
     line-height: 18px;
-    padding-block-start: .7rem;
-    /* padding-block-end: 1.4rem; */
+    margin: 0;
+    padding-block-start: var(--wi_space-lg);
     font-style: italic;
+}
+
+/* Notes are a single group: the gap between two consecutive notes is
+   tighter than the gap separating the group from the card above and the
+   actions row below. */
+.wi_summary .wi_p-note + .wi_p-note {
+    padding-block-start: var(--wi_space-2xs);
 }
 
 .wi_stat > span {
@@ -50,8 +57,109 @@
   color: var(--wi_color-border-secondary);
 }
 
-.wi_card--totals .wi_stat:last-child > span {
+/* .wi_group--selected wraps applicant type / trademarks / total classes so
+   :last-child above strips the border under "Total classes" instead of
+   leaking to the group that follows it. */
+
+.wi_group__title {
+  border-bottom: 1px solid color-mix(in srgb, var(--wi_color-border) 60%, transparent);
+  font-family: var(--wi_font-family);
+  font-size: 13px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wi_color-text);
+}
+
+/* .wi_root p (base.css) sets a bottom margin on every <p> in the plugin —
+   too wide a selector to touch. Override it here, scoped to just the group
+   titles, so Standard Registration Costs / Additional Services don't get
+   an extra margin on top of the flex gap already spacing them from the
+   row below. */
+.wi_card--totals .wi_group__title {
+  margin: 0;
+}
+
+.wi_stat--subtotal > span {
   font-weight: var(--wi_font-weight-semibold);
   color: var(--wi_color-text);
+}
+
+/* text-decoration: line-through can only draw a flat horizontal line —
+   an angled strike needs its own positioned element instead. */
+.wi_price--original {
+  position: relative;
+  display: inline-block;
+  color: var(--wi_color-error);
+  font-weight: var(--wi_font-weight-regular);
+  font-size: 0.9rem;
+  margin-inline-end: var(--wi_space-sm);
+}
+
+.wi_price--original::after {
+  content: '';
+  position: absolute;
+  left: -3%;
+  right: -3%;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+  transform: translateY(-50%) rotate(-8deg);
+  pointer-events: none;
+}
+
+.wi_price--discounted {
+  color: var(--wi_color-text);
+  font-weight: var(--wi_font-weight-semibold);
+}
+
+/* .wi_step's flex gap (result step only, overridden to match the notes'
+   padding-block-start below) is the single source of the notes-to-button
+   gap — .wi_step__actions' own margin-top would double it, so it's zeroed
+   here. Keeps FormStep's button spacing untouched. */
+.wi_step--result {
+  gap: var(--wi_space-lg);
+}
+
+.wi_step--result .wi_step__actions {
+  margin-top: 0;
+}
+
+/* Mandatory registration costs block. Rows stack via flex gap (not padding
+   or borders) so title-to-row and row-to-row spacing is uniform, matching
+   the Figma spec — no divider lines between the individual item rows. */
+.wi_group--mandatory {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-block-start: var(--wi_space-sm);
+  padding: 16px 20px;
+  background: var(--wi_color-surface);
+  border: 1px solid var(--wi_color-border);
+}
+
+.wi_group--mandatory .wi_stat,
+.wi_group--optional .wi_stat {
+  padding: 0;
+  border-bottom: none;
+}
+
+/* Subtotal closes out the mandatory block with its own divider, mirroring
+   the title's underline at the top of the block. */
+.wi_group--mandatory .wi_stat--subtotal {
+  padding-block-start: var(--wi_space-md);
+  border-top: 1px solid color-mix(in srgb, var(--wi_color-border) 60%, transparent);
+}
+
+/* Additional (optional) services block: no background, no border of its
+   own — just spacing from the block above and the same inline padding as
+   the mandatory block so both blocks' text aligns. */
+.wi_group--optional {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-block-start: var(--wi_space-lg);
+  padding-inline: 20px;
 }
 
