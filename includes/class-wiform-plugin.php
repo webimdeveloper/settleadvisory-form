@@ -344,7 +344,7 @@ class WiForm_Plugin {
 			],
 			'private'    => [
 				'submit_first'       => 4.0,
-				'submit_additional'  => 1.0,
+				'submit_additional'  => 0.5,
 				'cert_first'         => 6.8,
 				'cert_additional'    => 1.0,
 
