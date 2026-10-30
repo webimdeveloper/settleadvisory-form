@@ -30,7 +30,7 @@ Settings passed from PHP to JS:
   },
   "private": {
     "submit_first": 4,
-    "submit_additional": 0.5,
+    "submit_additional": 1,
     "cert_first": 6.8,
     "cert_additional": 1,
     "service_per_tm_usd": 200
@@ -53,7 +53,7 @@ Default ≈ 34.33 USD.
 - Service: $200 per trademark
 
 ### Private
-- Submit: 4 BUC + 0.5 BUC per extra class
+- Submit: 4 BUC + 1 BUC per extra class
 - Certificate: 6.8 BUC + 1 BUC per extra class
 - Service: $200 per trademark
 
